@@ -3,10 +3,8 @@ package com.example.venta_sneackers.Service;
 import com.example.venta_sneackers.dto.PedidoRequestDTO;
 import com.example.venta_sneackers.dto.PedidoResponseDTO;
 import com.example.venta_sneackers.model.Cliente;
-import com.example.venta_sneackers.model.Detalle;
 import com.example.venta_sneackers.model.Pedido;
 import com.example.venta_sneackers.repository.ClienteRepository;
-import com.example.venta_sneackers.repository.DetalleRepository;
 import com.example.venta_sneackers.repository.PedidoRepository;
 import java.util.List;
 import java.util.Optional;
@@ -20,7 +18,6 @@ public class PedidoService {
 
     private final PedidoRepository repository;
     private final ClienteRepository clienteRepository;
-    private final DetalleRepository detalleRepository;
 
     private String numeroPedido(Pedido pedido) {
         return String.valueOf(pedido.getIdPedido());
@@ -34,7 +31,7 @@ public class PedidoService {
                 pedido.getPedSubtotal(),
                 pedido.getPedDescuento(),
                 pedido.getPedTotal(),
-                pedido.getDetalle().getIdDetalle(),
+                pedido.isPedPagado(),
                 pedido.getCliente().getIdCliente()
         );
     }
@@ -45,13 +42,18 @@ public class PedidoService {
                 .collect(Collectors.toList());
     }
 
+    public List<PedidoResponseDTO> buscarPorPagado(boolean pedPagado) {
+        return repository.findByPedPagado(pedPagado).stream()
+                .map(this::toResponseDTO)
+                .collect(Collectors.toList());
+    }
+
     public Optional<PedidoResponseDTO> obtenerPorId(Long id) {
         return repository.findById(id)
                 .map(this::toResponseDTO);
     }
 
     public PedidoResponseDTO guardar(PedidoRequestDTO dto) {
-        Detalle detalle = detalleRepository.findById(dto.getDetalleId()).orElseThrow();
         Cliente cliente = clienteRepository.findById(dto.getClienteId()).orElseThrow();
 
         Pedido pedido = new Pedido();
@@ -59,7 +61,7 @@ public class PedidoService {
         pedido.setPedSubtotal(dto.getPedSubtotal());
         pedido.setPedDescuento(dto.getPedDescuento());
         pedido.setPedTotal(dto.getPedTotal());
-        pedido.setDetalle(detalle);
+        pedido.setPedPagado(Boolean.TRUE.equals(dto.getPedPagado()));
         pedido.setCliente(cliente);
 
         Pedido saved = repository.save(pedido);
@@ -68,14 +70,13 @@ public class PedidoService {
 
     public PedidoResponseDTO actualizar(Long id, PedidoRequestDTO dto) {
         Pedido pedido = repository.findById(id).orElseThrow();
-        Detalle detalle = detalleRepository.findById(dto.getDetalleId()).orElseThrow();
         Cliente cliente = clienteRepository.findById(dto.getClienteId()).orElseThrow();
 
         pedido.setPedFechaCompra(dto.getPedFechaCompra());
         pedido.setPedSubtotal(dto.getPedSubtotal());
         pedido.setPedDescuento(dto.getPedDescuento());
         pedido.setPedTotal(dto.getPedTotal());
-        pedido.setDetalle(detalle);
+        pedido.setPedPagado(Boolean.TRUE.equals(dto.getPedPagado()));
         pedido.setCliente(cliente);
 
         Pedido updated = repository.save(pedido);

@@ -26,6 +26,9 @@ public interface PedidoRepository extends JpaRepository<Pedido, Long> {
 
     List<Pedido> findByPedTotalBetween(BigDecimal totalMin, BigDecimal totalMax);
 
+    List<Pedido> findByPedPagado(boolean pedPagado);
+
+
     //Metodo 2 : @Query CON JPQL
 
     @Query("SELECT p FROM Pedido p WHERE p.pedTotal > :total")
@@ -45,5 +48,8 @@ public interface PedidoRepository extends JpaRepository<Pedido, Long> {
 
     @Query("SELECT p FROM Pedido p WHERE p.pedTotal BETWEEN :totalMin AND :totalMax")
     List<Pedido> findPedidosByTotalBetween(@Param("totalMin") BigDecimal totalMin, @Param("totalMax") BigDecimal totalMax);
+
+    @Query("SELECT p FROM Pedido p WHERE p.pedPagado = :pedPagado")
+    List<Pedido> findPedidosByPagado(@Param("pedPagado") boolean pedPagado);
 
 }
