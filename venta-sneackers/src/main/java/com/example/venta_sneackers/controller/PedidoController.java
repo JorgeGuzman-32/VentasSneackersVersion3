@@ -1,11 +1,8 @@
 package com.example.venta_sneackers.controller;
 
-import com.example.venta_sneackers.Service.PedidoService;
-import com.example.venta_sneackers.dto.PedidoRequestDTO;
-import com.example.venta_sneackers.dto.PedidoResponseDTO;
 import java.util.List;
 import java.util.Optional;
-import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -13,9 +10,21 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.example.venta_sneackers.Service.PedidoService;
+import com.example.venta_sneackers.dto.PedidoRequestDTO;
+import com.example.venta_sneackers.dto.PedidoResponseDTO;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/V1/pedidos")
@@ -46,7 +55,7 @@ public class PedidoController {
 
     //Obtener un pedido por ID
     @GetMapping("/{id}")
-    @operation(summary = "Obtener pedido por ID", description = "Devuelve los detalles de un pedido específico utilizando su ID.")
+    @Operation(summary = "Obtener pedido por ID", description = "Devuelve los detalles de un pedido específico utilizando su ID.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Pedido obtenido exitosamente",
             content = @Content(mediaType = "application/json",
@@ -84,7 +93,7 @@ public class PedidoController {
         @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
     public ResponseEntity<List<PedidoResponseDTO>> buscarPorClienteId(@PathVariable Long clienteId) {
-        return ResponseEntity.ok(pedidoService.buscarPorClienteId(clienteId));
+        return ResponseEntity.ok(pedidoService.obtenerPorClienteId(clienteId));
     }
 
 
@@ -99,11 +108,11 @@ public class PedidoController {
         @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
     public ResponseEntity<List<PedidoResponseDTO>> buscarPorProductoId(@PathVariable Long productoId) {
-        return ResponseEntity.ok(pedidoService.buscarPorProductoId(productoId));
+        return ResponseEntity.ok(pedidoService.obtenerPorProductoId(productoId));
     }
 
 
-    //Buscar pedidos por fecha de creación
+    //Buscar pedidos por fecha de COMPRA
     @GetMapping("/buscar/fecha/{fechaCreacion}")
     @Operation(summary = "Buscar pedidos por fecha de creación", description = "Devuelve una lista de pedidos creados en una fecha específica.")
     @ApiResponses(value = {
@@ -114,23 +123,8 @@ public class PedidoController {
         @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
     public ResponseEntity<List<PedidoResponseDTO>> buscarPorFechaCreacion(@PathVariable String fechaCreacion) {
-        return ResponseEntity.ok(pedidoService.buscarPorFechaCreacion(fechaCreacion));
+        return ResponseEntity.ok(pedidoService.buscarPorFechaCompra(fechaCreacion));
     }   
-
-
-    //Buscar pedidos por fecha de actualización
-    @GetMapping("/buscar/fecha-actualizacion/{fechaActualizacion}")
-    @Operation(summary = "Buscar pedidos por fecha de actualización", description = "Devuelve una lista de pedidos actualizados en una fecha específica.")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Pedidos obtenidos exitosamente",
-            content = @Content(mediaType = "application/json",
-            array = @ArraySchema(schema = @Schema(implementation = PedidoResponseDTO.class)))),
-        @ApiResponse(responseCode = "404", description = "No se encontraron pedidos para la fecha de actualización especificada"),
-        @ApiResponse(responseCode = "500", description = "Error interno del servidor")
-    })
-    public ResponseEntity<List<PedidoResponseDTO>> buscarPorFechaActualizacion(@PathVariable String fechaActualizacion) {
-        return ResponseEntity.ok(pedidoService.buscarPorFechaActualizacion(fechaActualizacion));
-    }
 
 
     ///Buscar pedidos por el total del pedido
@@ -144,7 +138,7 @@ public class PedidoController {
         @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
     public ResponseEntity<List<PedidoResponseDTO>> buscarPorTotal(@PathVariable double pedTotal) {
-        return ResponseEntity.ok(pedidoService.buscarPorTotal(pedTotal));
+        return ResponseEntity.ok(pedidoService.buscarPorTotalDeCompra(pedTotal));
     }
 
 
@@ -174,7 +168,7 @@ public class PedidoController {
 
     //Actualizar un pedido existente
     @PutMapping("/{id}")
-    @operation(summary = "Actualizar un pedido existente", description = "Permite actualizar los detalles de un pedido existente utilizando su ID y los datos proporcionados en el cuerpo de la solicitud.")
+    @Operation(summary = "Actualizar un pedido existente", description = "Permite actualizar los detalles de un pedido existente utilizando su ID y los datos proporcionados en el cuerpo de la solicitud.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Pedido actualizado exitosamente",
             content = @Content(mediaType = "application/json",
@@ -189,7 +183,7 @@ public class PedidoController {
 
     //Actualizar el estado de pago de un pedido
     @PutMapping("/{id}/pagado")
-    @operation(summary = "Actualizar el estado de pago de un pedido", description = "Permite actualizar el estado de pago de un pedido específico utilizando su ID y el nuevo estado de pago proporcionado en el cuerpo de la solicitud.")
+    @Operation(summary = "Actualizar el estado de pago de un pedido", description = "Permite actualizar el estado de pago de un pedido específico utilizando su ID y el nuevo estado de pago proporcionado en el cuerpo de la solicitud.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Estado de pago actualizado exitosamente",
             content = @Content(mediaType = "application/json",
@@ -199,7 +193,7 @@ public class PedidoController {
         @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
     public ResponseEntity<PedidoResponseDTO> actualizarPagado(@PathVariable Long id, @RequestBody boolean pedPagado) {
-        return ResponseEntity.ok(pedidoService.actualizarPagado(id, pedPagado));
+        return ResponseEntity.ok(pedidoService.actualizarEstadoPago(id, pedPagado));
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -208,7 +202,7 @@ public class PedidoController {
     
     //Eliminar un pedido por ID
     @DeleteMapping("/{id}")
-    @operation(summary = "Eliminar un pedido", description = "Permite eliminar un pedido específico utilizando su ID.")
+    @Operation(summary = "Eliminar un pedido", description = "Permite eliminar un pedido específico utilizando su ID.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "204", description = "Pedido eliminado exitosamente"),
         @ApiResponse(responseCode = "404", description = "Pedido no encontrado"),

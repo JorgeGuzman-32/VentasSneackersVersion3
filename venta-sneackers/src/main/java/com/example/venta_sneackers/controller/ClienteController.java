@@ -2,14 +2,14 @@ package com.example.venta_sneackers.controller;
 
 import  com.example.venta_sneackers.model.Cliente;
 import  com.example.venta_sneackers.Service.ClienteService;
-import io.swagger.V3.oas.annotations.Operation;
-import io.swagger.V3.oas.annotation.tags.Tag;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.venta_sneackers.Service.ClienteService;
 import com.example.venta_sneackers.dto.ClienteRequestDTO;
 import com.example.venta_sneackers.dto.ClienteResponseDTO;
 
@@ -32,7 +32,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 @RestController
 @RequestMapping("/api/V1/clientes")
 @RequiredArgsConstructor
-@Tag(name = "Clientes", descrption = "Operaciones relacionadas con los Clientes")
+@Tag(name = "Clientes", description = "Operaciones relacionadas con los Clientes")
 public class ClienteController {
     @Autowired
     private final ClienteService clienteService;

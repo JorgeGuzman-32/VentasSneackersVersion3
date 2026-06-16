@@ -6,6 +6,8 @@ import com.example.venta_sneackers.model.Cliente;
 import com.example.venta_sneackers.model.Pedido;
 import com.example.venta_sneackers.repository.ClienteRepository;
 import com.example.venta_sneackers.repository.PedidoRepository;
+
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -36,6 +38,13 @@ public class PedidoService {
         );
     }
 
+    //OBTENER PEDIDOS POR FECHA DE COMPRA
+    public List<PedidoResponseDTO> buscarPorFechaCompra(String pedFechaCompra) {
+        return repository.findByPedFechaCompra(pedFechaCompra).stream()
+                .map(this::toResponseDTO)
+                .collect(Collectors.toList());
+    }
+
     // OBTENER TODOS LOS PEDIDOS
     public List<PedidoResponseDTO> obtenerTodos() {
         return repository.findAll().stream()
@@ -46,6 +55,13 @@ public class PedidoService {
     // OBTENER PEDIDOS POR ESTADO DE PAGO
     public List<PedidoResponseDTO> buscarPorPagado(boolean pedPagado) {
         return repository.findByPedPagado(pedPagado).stream()
+                .map(this::toResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    // OBTENER PEDIDO POR EL TOTAL
+    public List<PedidoResponseDTO> buscarPorTotalDeCompra(double pedTotal) {
+        return repository.findByPedTotal(BigDecimal.valueOf(pedTotal)).stream()
                 .map(this::toResponseDTO)
                 .collect(Collectors.toList());
     }
@@ -100,12 +116,21 @@ public class PedidoService {
         pedido.setPedPagado(pagado);
         Pedido updated = repository.save(pedido);
         return toResponseDTO(updated);
+    }
     
 
     // OBTENER PEDIDOS POR ID DE CLIENTE
     public List<PedidoResponseDTO> obtenerPorClienteId(Long clienteId) {
-        return repository.findByClienteId(clienteId).stream()
+        return repository.findPedidosByClienteId(clienteId).stream()
                 .map(this::toResponseDTO)
                 .collect(Collectors.toList());
-        
+   
+    }
+
+    //obtenerPorProductoId
+    public List<PedidoResponseDTO> obtenerPorProductoId(Long productoId) {
+        return repository.findBypedforIdProducto(productoId).stream()
+                .map(this::toResponseDTO)
+                .collect(Collectors.toList());
+    }
 }
