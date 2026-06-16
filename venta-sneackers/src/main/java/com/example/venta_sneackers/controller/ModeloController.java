@@ -36,18 +36,24 @@ public class ModeloController {
     ///////////////////////////                 GETs                 /////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////
     
+
+    /// Obtener todos los modelos
     @GetMapping
     @Operation(summary = "Obtener todos los modelos", description = "Devuelve una lista de todos los modelos disponibles")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Modelos obtenidos exitosamente",
             content = @Content(mediaType = "application/json",
                 array = @ArraySchema(schema = @Schema(implementation = ModeloResponseDTO.class)))),
-        @ApiResponse(responseCode = "400", description = "Solicitud inválida")
+        @ApiResponse(responseCode = "404", description = "No se encontraron modelos"),
+        @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
     public ResponseEntity<List<ModeloResponseDTO>> obtenerTodos() {
         return ResponseEntity.ok(modeloService.obtenerTodos());
     }
 
+
+
+    /// Obtener un modelo por ID
     @GetMapping("/{id}")
     @Operation(summary = "Obtener modelo por ID", description = "Devuelve un modelo específico según su ID")
     @ApiResponses(value = {
@@ -55,7 +61,7 @@ public class ModeloController {
             content = @Content(mediaType = "application/json",
                 schema = @Schema(implementation = ModeloResponseDTO.class))),
         @ApiResponse(responseCode = "404", description = "Modelo no encontrado"),
-        @ApiResponse(responseCode = "400", description = "Solicitud inválida")
+        @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
     public ResponseEntity<ModeloResponseDTO> obtenerPorId(@PathVariable Long id) {
         return modeloService.obtenerPorId(id)
@@ -63,25 +69,31 @@ public class ModeloController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+
+    /// Buscar modelos por nombre
     @GetMapping("/buscar/nombre/{modNombre}")
     @Operation(summary = "Buscar modelo por nombre", description = "Devuelve los modelos que coinciden con el nombre proporcionado")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Modelos encontrados exitosamente",
             content = @Content(mediaType = "application/json",
                 array = @ArraySchema(schema = @Schema(implementation = ModeloResponseDTO.class)))),
-        @ApiResponse(responseCode = "400", description = "Solicitud inválida")
+        @ApiResponse(responseCode = "404", description = "No se encontraron modelos para el nombre especificado"),
+        @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
     public ResponseEntity<List<ModeloResponseDTO>> buscarPorNombre(@PathVariable String modNombre) {
         return ResponseEntity.ok(modeloService.buscarPorNombre(modNombre));
     }
-
+    
+    /// Buscar modelos por temporada
     @GetMapping("/buscar/temporada/{modTemporada}")
     @Operation(summary = "Buscar modelo por temporada", description = "Devuelve los modelos que pertenecen a la temporada especificada")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Modelos encontrados exitosamente",
             content = @Content(mediaType = "application/json",
                 array = @ArraySchema(schema = @Schema(implementation = ModeloResponseDTO.class)))),
-        @ApiResponse(responseCode = "400", description = "Solicitud inválida")
+        @ApiResponse(responseCode = "404", description = "No se encontraron modelos para la temporada especificada"),
+        @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+
     })
     public ResponseEntity<List<ModeloResponseDTO>> buscarPorTemporada(@PathVariable String modTemporada) {
         return ResponseEntity.ok(modeloService.buscarPorTemporada(modTemporada));
@@ -92,16 +104,15 @@ public class ModeloController {
     ///////////////////////////                 POSTs                 ////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////
     
-
-
+    /// Crear un nuevo modelo
     @PostMapping
     @Operation(summary = "Crear un nuevo modelo", description = "Permite crear un nuevo modelo de producto")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Modelo creado exitosamente",
+        @ApiResponse(responseCode = "201", description = "Modelo creado exitosamente",
             content = @Content(mediaType = "application/json",
                 schema = @Schema(implementation = ModeloResponseDTO.class),
                 examples = @ExampleObject(name = "EjemploModelo", value = "{\"modNombre\": \"Air Max\", \"modTemporada\": \"Verano\", \"modAnioLanzamiento\": 2024, \"modEdicionLimitada\": false, \"modDescripcion\": \"Zapatilla deportiva de alto rendimiento\"}"))),
-        @ApiResponse(responseCode = "400", description = "Solicitud inválida")
+        @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
     public ResponseEntity<ModeloResponseDTO> crearModelo(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
@@ -118,6 +129,7 @@ public class ModeloController {
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////                 PUTs                 ///////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+    
     /// Actualizar un modelo existente
     @PutMapping("/{id}")
     @Operation(summary = "Actualizar modelo por ID", description = "Permite actualizar los datos de un modelo específico según su ID")
@@ -126,7 +138,7 @@ public class ModeloController {
             content = @Content(mediaType = "application/json",
                 schema = @Schema(implementation = ModeloResponseDTO.class))),
         @ApiResponse(responseCode = "404", description = "Modelo no encontrado"),
-        @ApiResponse(responseCode = "400", description = "Solicitud inválida")
+        @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
     public ResponseEntity<ModeloResponseDTO> actualizarModelo(
             @PathVariable Long id,
@@ -145,13 +157,16 @@ public class ModeloController {
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////                 DELETEs                 /////////////////////////////
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
-    /// Eliminar un modelo por ID
     
+    /// Eliminar un modelo por ID
     @DeleteMapping("/{id}")
     @Operation(summary = "Eliminar modelo por ID", description = "Permite eliminar un modelo específico según su ID")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Modelo eliminado exitosamente"),
-        @ApiResponse(responseCode = "404", description = "Modelo no encontrado")
+        @ApiResponse(responseCode = "200", description = "Modelo eliminado exitosamente",
+            content = @Content(mediaType = "application/json",
+            schema = @Schema(implementation = Void.class))),
+        @ApiResponse(responseCode = "404", description = "Modelo no encontrado"),
+        @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
     public ResponseEntity<Void> eliminarModelo(@PathVariable Long id) {
         modeloService.eliminar(id);

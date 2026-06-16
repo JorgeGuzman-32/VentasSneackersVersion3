@@ -72,6 +72,7 @@ public class ModeloService {
         });
     }
 
+    
     // 5.ELIMINAR
     public void eliminar(Long id) {
         modeloRepository.deleteById(id);

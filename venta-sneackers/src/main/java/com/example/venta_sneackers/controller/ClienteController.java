@@ -39,7 +39,9 @@ public class ClienteController {
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////////                 GETs                 /////////////////////////////////////////
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
     @GetMapping
      public ResponseEntity<List<ClienteResponseDTO>> obtenerTodos() {
         return ResponseEntity.ok(clienteService.obtenerTodos());
@@ -52,10 +54,11 @@ public class ClienteController {
         @Schema(description = "Cliente")
 
         public class Cliente {
-            @Schema(description = "CÃ³digo del Cliente", example = 4567)
+            @Schema(description = "Codigo del Cliente", example = 4567)
             private Long idCliente;
         }
     }
+
 
     @GetMapping("/buscar/{cliNombre}")
     public ResponseEntity<@Nullable Object> buscarPorNombre(@PathVariable String cliNombre) {
@@ -72,9 +75,10 @@ public class ClienteController {
         return ResponseEntity.ok(clienteService.buscarPorDireccion(cliDireccion));
 
            public class Cliente { 
-            @Schema(description = "Direcccion del Cliente", example = "avenida siempre viva")
+            @Schema(description = "Direcccion del Cliente", example = "Avenida siempre viva")
                 private String cliDireccion;}
     }
+
 
     @GetMapping("/buscar/estado/{cliEstado}")
     public ResponseEntity<@Nullable Object> buscarPorEstado(@PathVariable String cliEstado) {
