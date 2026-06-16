@@ -42,7 +42,9 @@ public class ModeloService {
 
     // 2.OBTENER POR ID
     public Optional<ModeloResponseDTO> obtenerPorId(Long id) {
-        return modeloRepository.findById(id).map(this::mapToDTO);
+        return modeloRepository
+            .findById(id)
+            .map(this::mapToDTO);
     }
 
     // 3.GUARDAR
@@ -78,30 +80,36 @@ public class ModeloService {
     // 6.BUSCAR POR NOMBRE
     public List<ModeloResponseDTO> buscarPorNombre(String nombre) {
         return modeloRepository.findByModNombreContainingIgnoreCase(nombre)
-                .stream().map(this::mapToDTO).collect(Collectors.toList());
+                .stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
     }
 
     // 7.BUSCAR POR TEMPORADA
     public List<ModeloResponseDTO> buscarPorTemporada(String temporada) {
         return modeloRepository.findByModTemporada(temporada)
-                .stream().map(this::mapToDTO).collect(Collectors.toList());
+                .stream()
+                .map(this::mapToDTO).collect(Collectors.toList());
     }
 
     // 8.BUSCAR POR EDICION LIMITADA
     public List<ModeloResponseDTO> buscarPorEdicionLimitada(Boolean edicionLimitada) {
         return modeloRepository.findByModEdicionLimitada(edicionLimitada)
-                .stream().map(this::mapToDTO).collect(Collectors.toList());
+                .stream()
+                .map(this::mapToDTO).collect(Collectors.toList());
     }
 
-    // 9.BUSCAR POR ANIO LANZAMIENTO
+    // 9.BUSCAR POR AÑO LANZAMIENTO
     public List<ModeloResponseDTO> buscarPorAnioLanzamiento(Integer anio) {
         return modeloRepository.findByModAnioLanzamiento(anio)
-                .stream().map(this::mapToDTO).collect(Collectors.toList());
+                .stream()
+                .map(this::mapToDTO).collect(Collectors.toList());
     }
 
     // 10.BUSCAR POR TEMPORADA ORDENADO
     public List<ModeloResponseDTO> buscarPorTemporadaOrdenado(String temporada) {
         return modeloRepository.findByTemporadaOrdenado(temporada)
-                .stream().map(this::mapToDTO).collect(Collectors.toList());
+                .stream()
+                .map(this::mapToDTO).collect(Collectors.toList());
     }
 }
