@@ -17,6 +17,5 @@ public class PedidoResponseDTO {
     private BigDecimal pedSubtotal;
     private BigDecimal pedDescuento;
     private BigDecimal pedTotal;
-    private Long detalleId;
     private Long clienteId;
 }

@@ -11,7 +11,6 @@ import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 import java.math.BigDecimal;
 
 @Data
@@ -37,9 +36,8 @@ public class Pedido {
     @Column(nullable = false)
     private BigDecimal pedTotal;
 
-    @ManyToOne
-    @JoinColumn(name = "id_detalle", nullable = false)
-    private Detalle detalle;
+    @Column(nullable = false)
+    private boolean pedPagado;
 
     @ManyToOne
     @JoinColumn(name = "id_cliente", nullable = false)

@@ -27,11 +27,12 @@ public class PedidoRequestDTO {
     @Positive(message = "El total debe ser mayor a 0")
     private BigDecimal pedTotal;
 
-    @NotNull(message = "El detalle es obligatorio")
-    private Long detalleId;
-
     @NotNull(message = "El id del cliente es obligatorio")
     private Long clienteId;
+
+    
+    @NotNull(message = "El estado de pago es obligatorio")
+    private Boolean pedPagado;
 }
 
 

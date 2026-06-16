@@ -45,7 +45,7 @@ public class TallaService {
         );
     }
 
-    public TallaResponseDTO actualizar(Long id, TallaRequestDTO dto) {
+    public TallaResponseDTO actualizar(Long id, TallaResponseDTO dto) {
         Talla talla = repository.findById(id).orElseThrow();
         talla.setTallNombre(dto.getTallNombre());
         talla.setUnidad(dto.getUnidad());
@@ -57,8 +57,12 @@ public class TallaService {
             updated.getUnidad()
         );
     }
+    
 
     public void eliminar(Long id) {
         repository.deleteById(id);
     }
+
+
+
 }

@@ -1,13 +1,11 @@
 package com.example.venta_sneackers.Config;
 
 import com.example.venta_sneackers.model.Cliente;
-import com.example.venta_sneackers.model.Detalle;
 import com.example.venta_sneackers.model.Modelo;
 import com.example.venta_sneackers.model.Pedido;
 import com.example.venta_sneackers.model.Producto;
 import com.example.venta_sneackers.model.Talla;
 import com.example.venta_sneackers.repository.ClienteRepository;
-import com.example.venta_sneackers.repository.DetalleRepository;
 import com.example.venta_sneackers.repository.ModeloRepository;
 import com.example.venta_sneackers.repository.PedidoRepository;
 import com.example.venta_sneackers.repository.ProductoRepository;
@@ -29,7 +27,6 @@ public class DataInitializer implements CommandLineRunner {
     private final TallaRepository tallaRepository;
     private final ProductoRepository productoRepository;
     private final ClienteRepository clienteRepository;
-    private final DetalleRepository detalleRepository;
     private final PedidoRepository pedidoRepository;
 
     @Override
@@ -57,12 +54,11 @@ public class DataInitializer implements CommandLineRunner {
         }
 
         log.info(
-                ">>> DataInitializer: {} modelos, {} tallas, {} productos, {} clientes, {} detalles y {} pedidos.",
+                ">>> DataInitializer: {} modelos, {} tallas, {} productos, {} clientes y {} pedidos.",
                 modeloRepository.count(),
                 tallaRepository.count(),
                 productoRepository.count(),
                 clienteRepository.count(),
-                detalleRepository.count(),
                 pedidoRepository.count()
         );
     }
@@ -217,19 +213,12 @@ public class DataInitializer implements CommandLineRunner {
         Cliente cliente5 = clientes.get(4);
         Cliente cliente6 = clientes.get(5);
 
-        Detalle detalle1 = detalleRepository.save(new Detalle(null));
-        Detalle detalle2 = detalleRepository.save(new Detalle(null));
-        Detalle detalle3 = detalleRepository.save(new Detalle(null));
-        Detalle detalle4 = detalleRepository.save(new Detalle(null));
-        Detalle detalle5 = detalleRepository.save(new Detalle(null));
-        Detalle detalle6 = detalleRepository.save(new Detalle(null));
-
-        pedidoRepository.save(new Pedido(null, "2024-01-15", new BigDecimal("89.00"), new BigDecimal("5.00"), new BigDecimal("84.00"), detalle1, cliente1));
-        pedidoRepository.save(new Pedido(null, "2024-02-20", new BigDecimal("150.00"), new BigDecimal("10.00"), new BigDecimal("140.00"), detalle2, cliente2));
-        pedidoRepository.save(new Pedido(null, "2024-03-10", new BigDecimal("120.00"), new BigDecimal("0.00"), new BigDecimal("120.00"), detalle3, cliente3));
-        pedidoRepository.save(new Pedido(null, "2024-04-05", new BigDecimal("200.00"), new BigDecimal("15.00"), new BigDecimal("185.00"), detalle4, cliente4));
-        pedidoRepository.save(new Pedido(null, "2024-05-12", new BigDecimal("95.00"), new BigDecimal("8.00"), new BigDecimal("87.00"), detalle5, cliente5));
-        pedidoRepository.save(new Pedido(null, "2024-06-18", new BigDecimal("175.00"), new BigDecimal("12.00"), new BigDecimal("163.00"), detalle6, cliente6));
+        pedidoRepository.save(new Pedido(null, "2024-01-15", new BigDecimal("89.00"), new BigDecimal("5.00"), new BigDecimal("84.00"), true, cliente1));
+        pedidoRepository.save(new Pedido(null, "2024-02-20", new BigDecimal("150.00"), new BigDecimal("10.00"), new BigDecimal("140.00"), false, cliente2));
+        pedidoRepository.save(new Pedido(null, "2024-03-10", new BigDecimal("120.00"), new BigDecimal("0.00"), new BigDecimal("120.00"), true, cliente3));
+        pedidoRepository.save(new Pedido(null, "2024-04-05", new BigDecimal("200.00"), new BigDecimal("15.00"), new BigDecimal("185.00"), true, cliente4));
+        pedidoRepository.save(new Pedido(null, "2024-05-12", new BigDecimal("95.00"), new BigDecimal("8.00"), new BigDecimal("87.00"), false, cliente5));
+        pedidoRepository.save(new Pedido(null, "2024-06-18", new BigDecimal("175.00"), new BigDecimal("12.00"), new BigDecimal("163.00"), true, cliente6));
 
         log.info(">>> DataInitializer: pedidos base cargados.");
     }
