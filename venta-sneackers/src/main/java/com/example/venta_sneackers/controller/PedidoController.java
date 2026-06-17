@@ -21,7 +21,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import org.springframework.web.bind.annotation.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
@@ -99,16 +99,13 @@ public class PedidoController {
 
     //Buscar pedidos por ID de producto
     @GetMapping("/buscar/producto/{productoId}")
-    @Operation(summary = "Buscar pedidos por ID de producto", description = "Devuelve una lista de pedidos que incluyen un producto específico utilizando su ID.")
+    @Operation(summary = "Buscar pedidos por ID de producto", description = "Este endpoint aún no está disponible porque la entidad Pedido no tiene relación con Producto.")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Pedidos obtenidos exitosamente",
-            content = @Content(mediaType = "application/json",
-            array = @ArraySchema(schema = @Schema(implementation = PedidoResponseDTO.class)))),
-        @ApiResponse(responseCode = "404", description = "No se encontraron pedidos para el producto especificado"),
+        @ApiResponse(responseCode = "501", description = "Funcionalidad no implementada"),
         @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
-    public ResponseEntity<List<PedidoResponseDTO>> buscarPorProductoId(@PathVariable Long productoId) {
-        return ResponseEntity.ok(pedidoService.obtenerPorProductoId(productoId));
+    public ResponseEntity<Void> buscarPorProductoId(@PathVariable Long productoId) {
+        return ResponseEntity.status(501).build();
     }
 
 
@@ -177,7 +174,8 @@ public class PedidoController {
         @ApiResponse(responseCode = "404", description = "Pedido no encontrado"),
         @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
-    public ResponseEntity<PedidoResponseDTO> actualizar(@PathVariable Long id, @RequestBody PedidoRequestDTO dto) {
+    public ResponseEntity<PedidoResponseDTO> actualizar(@PathVariable Long id, 
+        @RequestBody PedidoRequestDTO dto) {
         return ResponseEntity.ok(pedidoService.actualizar(id, dto));
     }
 

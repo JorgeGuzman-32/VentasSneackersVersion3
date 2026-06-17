@@ -124,13 +124,5 @@ public class PedidoService {
         return repository.findPedidosByClienteId(clienteId).stream()
                 .map(this::toResponseDTO)
                 .collect(Collectors.toList());
-   
-    }
-
-    //obtenerPorProductoId
-    public List<PedidoResponseDTO> obtenerPorProductoId(Long productoId) {
-        return repository.findBypedforIdProducto(productoId).stream()
-                .map(this::toResponseDTO)
-                .collect(Collectors.toList());
     }
 }

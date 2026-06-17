@@ -28,10 +28,10 @@ public interface ProductoRepository extends JpaRepository<Producto, Long> {
     @Query("SELECT p FROM Producto p WHERE p.proPrecio <= :precioMax ORDER BY p.proPrecio ASC")
     List<Producto> findProductosBajoPresupuesto(@Param("precioMax") BigDecimal precioMax);
 
-    @Query("SELECT p FROM Producto p WHERE p.modelo.id = :modeloId")
+    @Query("SELECT p FROM Producto p WHERE p.modelo.idModelo = :modeloId")
     List<Producto> findByModeloId(@Param("modeloId") Long modeloId);
 
-    @Query("SELECT p FROM Producto p WHERE p.talla.id = :tallaId")
+    @Query("SELECT p FROM Producto p WHERE p.talla.Id = :tallaId")
     List<Producto> findByTallaId(@Param("tallaId") Long tallaId);
 
     @Query("SELECT p FROM Producto p ORDER BY p.proPrecio DESC")

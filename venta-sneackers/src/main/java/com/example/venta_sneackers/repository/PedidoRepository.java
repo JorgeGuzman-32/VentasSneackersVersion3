@@ -28,9 +28,6 @@ public interface PedidoRepository extends JpaRepository<Pedido, Long> {
 
     List<Pedido> findByPedPagado(boolean pedPagado);
 
-    //obtenerPorProductoId
-    List<Pedido> findBypedforIdProducto(Long productoId);
-
     // OBTENER PEDIDO POR EL TOTAL
     List<Pedido> findByPedTotal(BigDecimal pedTotal);
 

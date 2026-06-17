@@ -18,6 +18,7 @@ import com.example.venta_sneackers.dto.TallaResponseDTO;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -48,11 +49,39 @@ public class TallaController {
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Tallas obtenidas exitosamente",
             content = @Content(mediaType = "application/json",
+                examples = @ExampleObject(value = """
+                    [
+                        {
+                            "id": 1,
+                            "tallNombre": "Talla 42",
+                            "unidad": "EU"
+                        },
+                        {
+                            "id": 2,
+                            "tallNombre": "Talla 9",
+                            "unidad": "US"
+                        }
+                    ]
+                """),
             schema = @Schema(implementation = TallaResponseDTO.class))),
-        @ApiResponse(responseCode = "404", description = "No se encontraron tallas"),
-        @ApiResponse(responseCode = "500", description = "Error interno del servidor")
-    })
-    
+            
+         @ApiResponse(responseCode = "404", description = "No se encontraron tallas",
+            content = @Content(mediaType = "application/json",
+            examples = @ExampleObject(value = """
+                {
+                    "error": "No se encontraron tallas"
+                }
+            """))),
+        @ApiResponse(responseCode = "500", description = "Error interno del servidor",
+            content = @Content(mediaType = "application/json",
+            examples = @ExampleObject(value = """
+                {
+                    "error": "Ocurrió un error al procesar la solicitud"
+                }
+            """))
+            )  
+          })
+
     public ResponseEntity<List<TallaResponseDTO>> obtenerTodas() {
         return ResponseEntity.ok(tallaService.obtenerTodos());
     }
@@ -63,9 +92,28 @@ public class TallaController {
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Talla obtenida exitosamente",
             content = @Content(mediaType = "application/json",
+            examples = @ExampleObject(value = """
+                {
+                    "id": 1,
+                    "tallNombre": "Talla 42",
+                    "unidad": "EU"
+                }
+            """),
             schema = @Schema(implementation = TallaResponseDTO.class))),
-        @ApiResponse(responseCode = "404", description = "Talla no encontrada"),
-        @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+        @ApiResponse(responseCode = "404", description = "Talla no encontrada",
+            content = @Content(mediaType = "application/json",
+            examples = @ExampleObject(value = """
+                {
+                    "error": "Talla con ID 1 no encontrada"
+                }
+            """))),
+        @ApiResponse(responseCode = "500", description = "Error interno del servidor",
+            content = @Content(mediaType = "application/json",
+            examples = @ExampleObject(value = """
+                {
+                    "error": "Ocurrió un error al procesar la solicitud"
+                }
+            """)))
     })
     public ResponseEntity<TallaResponseDTO> obtenerPorId(@PathVariable Long id) {
         return tallaService.obtenerPorId(id)
@@ -83,9 +131,26 @@ public class TallaController {
     @ApiResponses(value = {
         @ApiResponse(responseCode = "201", description = "Talla creada exitosamente",
             content = @Content(mediaType = "application/json",
+                examples = @ExampleObject(value = """
+                    {
+                        "OK": "Talla creada exitosamente"
+                    }
+                """),
             schema = @Schema(implementation = TallaResponseDTO.class))),
-        @ApiResponse(responseCode = "400", description = "Solicitud inválida"),
-        @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+        @ApiResponse(responseCode = "400", description = "Solicitud inválida",
+            content = @Content(mediaType = "application/json",
+            examples = @ExampleObject(value = """
+                {
+                    "error": "El campo 'tallNombre' es obligatorio"
+                }
+            """))),
+        @ApiResponse(responseCode = "500", description = "Error interno del servidor",
+            content = @Content(mediaType = "application/json",
+            examples = @ExampleObject(value = """
+                {
+                    "error": "Ocurrió un error al procesar la solicitud"
+                }
+            """)))
     })
     public ResponseEntity<TallaResponseDTO> crear(@RequestBody TallaRequestDTO dto) {
         TallaResponseDTO created = tallaService.guardar(dto);
@@ -104,9 +169,27 @@ public class TallaController {
         @ApiResponse(responseCode = "200", description = "Talla actualizada exitosamente",
             content = @Content(mediaType = "application/json",
             schema = @Schema(implementation = TallaResponseDTO.class))),
-        @ApiResponse(responseCode = "400", description = "Solicitud inválida"),
-        @ApiResponse(responseCode = "404", description = "Talla no encontrada"),
-        @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+        @ApiResponse(responseCode = "400", description = "Solicitud inválida",
+            content = @Content(mediaType = "application/json",
+            examples = @ExampleObject(value = """
+                {
+                    "error": "Los datos proporcionados son inválidos"
+                }
+            """))),
+        @ApiResponse(responseCode = "404", description = "Talla no encontrada",
+            content = @Content(mediaType = "application/json",
+            examples = @ExampleObject(value = """
+                {
+                    "error": "Talla con ID 1 no encontrada"
+                }
+            """))),
+        @ApiResponse(responseCode = "500", description = "Error interno del servidor",
+            content = @Content(mediaType = "application/json",
+            examples = @ExampleObject(value = """
+                {
+                    "error": "Ocurrió un error al procesar la solicitud"
+                }
+            """)))
     })
 
     public ResponseEntity<TallaResponseDTO> actualizar(@PathVariable Long id, @RequestBody TallaResponseDTO dto) {
@@ -126,9 +209,35 @@ public class TallaController {
     @DeleteMapping("/{id}")
     @Operation(summary = "Eliminar talla", description = "Permite eliminar una talla específica según su ID")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "204", description = "Talla eliminada exitosamente"),
-        @ApiResponse(responseCode = "404", description = "Talla no encontrada"),
-        @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+        @ApiResponse(responseCode = "204", description = "Talla eliminada exitosamente",
+                content = @Content(mediaType = "application/json",
+                examples = @ExampleObject(value = """
+                    {
+                        "message": "Talla con ID 1 eliminada exitosamente"
+                    }
+                """))),
+         @ApiResponse(responseCode = "400", description = "Solicitud inválida",
+            content = @Content(mediaType = "application/json",
+            examples = @ExampleObject(value = """
+                {
+                    "error": "El ID proporcionado es inválido"
+                }
+            """))
+        ),
+        @ApiResponse(responseCode = "404", description = "Talla no encontrada",
+            content = @Content(mediaType = "application/json",
+            examples = @ExampleObject(value = """
+                {
+                    "error": "Talla con ID 1 no encontrada"
+                }
+            """))),
+        @ApiResponse(responseCode = "500", description = "Error interno del servidor",
+            content = @Content(mediaType = "application/json",
+            examples = @ExampleObject(value = """
+                {
+                    "error": "Ocurrió un error al procesar la solicitud"
+                }
+            """)))
     })  
 
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {

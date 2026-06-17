@@ -29,6 +29,16 @@ public class ClienteService {
             )).collect(Collectors.toList());
     }
 
+    public List<ClienteResponseDTO> obtenerPorIdCliente(Long idCliente) {
+        return repository.findByIdCliente(idCliente).stream().map(cliente ->
+            new ClienteResponseDTO(
+                cliente.getIdCliente(),
+                cliente.getCliNombre(),
+                cliente.getCliDireccion(),
+                cliente.getCliEstado()
+            )).collect(Collectors.toList());
+    }
+
     public Optional<ClienteResponseDTO> obtenerPorId(Long id) {
         return repository.findById(id).map(cliente ->
             new ClienteResponseDTO(

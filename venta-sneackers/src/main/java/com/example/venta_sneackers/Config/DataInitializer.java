@@ -10,12 +10,12 @@ import com.example.venta_sneackers.repository.ModeloRepository;
 import com.example.venta_sneackers.repository.PedidoRepository;
 import com.example.venta_sneackers.repository.ProductoRepository;
 import com.example.venta_sneackers.repository.TallaRepository;
+
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.math.BigDecimal;
 
 @Slf4j
