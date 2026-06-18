@@ -1,6 +1,7 @@
 package com.example.venta_sneackers.controller;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
@@ -20,21 +21,24 @@ import com.example.venta_sneackers.dto.PedidoResponseDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.web.bind.annotation.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/V1/pedidos")
+@Tag(name = "Pedidos", description = "Endpoints para gestionar los pedidos de la tienda de sneakers.")
 @RequiredArgsConstructor
 public class PedidoController {
 
     private final PedidoService pedidoService;
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////////                 GETs                 /////////////////////////////////////////
+    ///////////////////////////                 GETs                                 /////////////////////////
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -45,11 +49,33 @@ public class PedidoController {
         @ApiResponse(responseCode = "200", description = "Pedidos obtenidos exitosamente",
             content = @Content(mediaType = "application/json",
             array = @ArraySchema(schema = @Schema(implementation = PedidoResponseDTO.class)))),
-        @ApiResponse(responseCode = "404", description = "No se encontraron pedidos"),
-        @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+        @ApiResponse(responseCode = "404", description = "No se encontraron pedidos",
+            content = @Content(mediaType = "application/json",
+            examples = @ExampleObject(value = """
+                {
+                    "error": "No encontrado",
+                    "descripcion": "No se encontraron pedidos registrados en el sistema."
+                }
+            """))),
+        @ApiResponse(responseCode = "500", description = "Error interno del servidor",
+            content = @Content(mediaType = "application/json",
+            examples = @ExampleObject(value = """
+                {
+                    "error": "Error interno",
+                    "descripcion": "Ocurrió un error interno del servidor."
+                }
+            """)))
     })
-    public ResponseEntity<List<PedidoResponseDTO>> obtenerTodos() {
-        return ResponseEntity.ok(pedidoService.obtenerTodos());
+    public ResponseEntity<?> obtenerTodos() {
+        List<PedidoResponseDTO> pedidos = pedidoService.obtenerTodos();
+        if (pedidos.isEmpty()) {
+            Map<String, String> error = Map.of(
+                "error", "No encontrado",
+                "descripcion", "No se encontraron pedidos registrados en el sistema."
+            );
+            return ResponseEntity.status(404).body(error);
+        }
+        return ResponseEntity.ok(pedidos);
     }
 
 
@@ -60,11 +86,34 @@ public class PedidoController {
         @ApiResponse(responseCode = "200", description = "Pedido obtenido exitosamente",
             content = @Content(mediaType = "application/json",
             schema = @Schema(implementation = PedidoResponseDTO.class))),
-        @ApiResponse(responseCode = "404", description = "Pedido no encontrado"),
-        @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+        @ApiResponse(responseCode = "404", description = "Pedido no encontrado",
+            content = @Content(mediaType = "application/json",
+            examples = @ExampleObject(value = """
+                {
+                    "error": "No encontrado",
+                    "descripcion": "Pedido no encontrado."
+                }
+            """))),
+        @ApiResponse(responseCode = "500", description = "Error interno del servidor",
+            content = @Content(mediaType = "application/json",
+            examples = @ExampleObject(value = """
+                {
+                    "error": "Error interno",
+                    "descripcion": "Ocurrió un error interno del servidor."
+                }
+            """)))
     })
-    public ResponseEntity<Optional<PedidoResponseDTO>> obtenerPorId(@PathVariable Long id) {
-        return ResponseEntity.ok(pedidoService.obtenerPorId(id));
+    public ResponseEntity<?> obtenerPorId(@PathVariable Long id) {
+        Optional<PedidoResponseDTO> pedidoOpt = pedidoService.obtenerPorId(id);
+        if (pedidoOpt.isPresent()) {
+            return ResponseEntity.ok(pedidoOpt.get());
+        } else {
+            Map<String, String> error = Map.of(
+                "error", "No encontrado",
+                "descripcion", "Pedido no encontrado con el ID proporcionado."
+            );
+            return ResponseEntity.status(404).body(error);
+        }
     }
 
 
@@ -75,11 +124,33 @@ public class PedidoController {
         @ApiResponse(responseCode = "200", description = "Pedidos obtenidos exitosamente",
             content = @Content(mediaType = "application/json",
             array = @ArraySchema(schema = @Schema(implementation = PedidoResponseDTO.class)))),
-        @ApiResponse(responseCode = "404", description = "No se encontraron pedidos con el estado de pago especificado"),
-        @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+        @ApiResponse(responseCode = "404", description = "No se encontraron pedidos con el estado de pago especificado",
+            content = @Content(mediaType = "application/json",
+            examples = @ExampleObject(value = """
+                {
+                    "error": "No encontrado",
+                    "descripcion": "No se encontraron pedidos con el estado de pago especificado."
+                }
+            """))),
+        @ApiResponse(responseCode = "500", description = "Error interno del servidor",
+            content = @Content(mediaType = "application/json",
+            examples = @ExampleObject(value = """
+                {
+                    "error": "Error interno",
+                    "descripcion": "Ocurrió un error interno del servidor."
+                }
+            """)))
     })
-    public ResponseEntity<List<PedidoResponseDTO>> buscarPorPagado(@PathVariable boolean pedPagado) {
-        return ResponseEntity.ok(pedidoService.buscarPorPagado(pedPagado));
+    public ResponseEntity<?> buscarPorPagado(@PathVariable boolean pedPagado) {
+        List<PedidoResponseDTO> pedidos = pedidoService.buscarPorPagado(pedPagado);
+        if (pedidos.isEmpty()) {
+            Map<String, String> error = Map.of(
+                "error", "No encontrado",
+                "descripcion", "No se encontraron pedidos con el estado de pago especificado."
+            );
+            return ResponseEntity.status(404).body(error);
+        }
+        return ResponseEntity.ok(pedidos);
     }
 
     //Buscar pedidos por ID de cliente
@@ -89,11 +160,33 @@ public class PedidoController {
         @ApiResponse(responseCode = "200", description = "Pedidos obtenidos exitosamente",
             content = @Content(mediaType = "application/json",
             array = @ArraySchema(schema = @Schema(implementation = PedidoResponseDTO.class)))),
-        @ApiResponse(responseCode = "404", description = "No se encontraron pedidos para el cliente especificado"),
-        @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+        @ApiResponse(responseCode = "404", description = "No se encontraron pedidos para el cliente especificado",
+            content = @Content(mediaType = "application/json",
+            examples = @ExampleObject(value = """
+                {
+                    "error": "No encontrado",
+                    "descripcion": "No se encontraron pedidos para el cliente especificado."
+                }
+            """))),
+        @ApiResponse(responseCode = "500", description = "Error interno del servidor",
+            content = @Content(mediaType = "application/json",
+            examples = @ExampleObject(value = """
+                {
+                    "error": "Error interno",
+                    "descripcion": "Ocurrió un error interno del servidor."
+                }
+            """)))
     })
-    public ResponseEntity<List<PedidoResponseDTO>> buscarPorClienteId(@PathVariable Long clienteId) {
-        return ResponseEntity.ok(pedidoService.obtenerPorClienteId(clienteId));
+    public ResponseEntity<?> buscarPorClienteId(@PathVariable Long clienteId) {
+        List<PedidoResponseDTO> pedidos = pedidoService.obtenerPorClienteId(clienteId);
+        if (pedidos.isEmpty()) {
+            Map<String, String> error = Map.of(
+                "error", "No encontrado",
+                "descripcion", "No se encontraron pedidos para el cliente especificado."
+            );
+            return ResponseEntity.status(404).body(error);
+        }
+        return ResponseEntity.ok(pedidos);
     }
 
 
@@ -101,11 +194,29 @@ public class PedidoController {
     @GetMapping("/buscar/producto/{productoId}")
     @Operation(summary = "Buscar pedidos por ID de producto", description = "Este endpoint aún no está disponible porque la entidad Pedido no tiene relación con Producto.")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "501", description = "Funcionalidad no implementada"),
-        @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+        @ApiResponse(responseCode = "501", description = "Funcionalidad no implementada",
+            content = @Content(mediaType = "application/json",
+            examples = @ExampleObject(value = """
+                {
+                    "error": "No implementado",
+                    "descripcion": "Funcionalidad no implementada."
+                }
+            """))),
+        @ApiResponse(responseCode = "500", description = "Error interno del servidor",
+            content = @Content(mediaType = "application/json",
+            examples = @ExampleObject(value = """
+                {
+                    "error": "Error interno",
+                    "descripcion": "Ocurrió un error interno del servidor."
+                }
+            """)))
     })
-    public ResponseEntity<Void> buscarPorProductoId(@PathVariable Long productoId) {
-        return ResponseEntity.status(501).build();
+    public ResponseEntity<?> buscarPorProductoId(@PathVariable Long productoId) {
+        Map<String, String> error = Map.of(
+            "error", "No implementado",
+            "descripcion", "Funcionalidad no implementada."
+        );
+        return ResponseEntity.status(501).body(error);
     }
 
 
@@ -116,11 +227,33 @@ public class PedidoController {
         @ApiResponse(responseCode = "200", description = "Pedidos obtenidos exitosamente",
             content = @Content(mediaType = "application/json",
             array = @ArraySchema(schema = @Schema(implementation = PedidoResponseDTO.class)))),
-        @ApiResponse(responseCode = "404", description = "No se encontraron pedidos para la fecha especificada"),
-        @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+        @ApiResponse(responseCode = "404", description = "No se encontraron pedidos para la fecha especificada",
+            content = @Content(mediaType = "application/json",
+            examples = @ExampleObject(value = """
+                {
+                    "error": "No encontrado",
+                    "descripcion": "No se encontraron pedidos para la fecha especificada."
+                }
+            """))),
+        @ApiResponse(responseCode = "500", description = "Error interno del servidor",
+            content = @Content(mediaType = "application/json",
+            examples = @ExampleObject(value = """
+                {
+                    "error": "Error interno",
+                    "descripcion": "Ocurrió un error interno del servidor."
+                }
+            """)))
     })
-    public ResponseEntity<List<PedidoResponseDTO>> buscarPorFechaCreacion(@PathVariable String fechaCreacion) {
-        return ResponseEntity.ok(pedidoService.buscarPorFechaCompra(fechaCreacion));
+    public ResponseEntity<?> buscarPorFechaCreacion(@PathVariable String fechaCreacion) {
+        List<PedidoResponseDTO> pedidos = pedidoService.buscarPorFechaCompra(fechaCreacion);
+        if (pedidos.isEmpty()) {
+            Map<String, String> error = Map.of(
+                "error", "No encontrado",
+                "descripcion", "No se encontraron pedidos para la fecha especificada."
+            );
+            return ResponseEntity.status(404).body(error);
+        }
+        return ResponseEntity.ok(pedidos);
     }   
 
 
@@ -131,17 +264,39 @@ public class PedidoController {
         @ApiResponse(responseCode = "200", description = "Pedidos obtenidos exitosamente",
             content = @Content(mediaType = "application/json",
             array = @ArraySchema(schema = @Schema(implementation = PedidoResponseDTO.class)))),
-        @ApiResponse(responseCode = "404", description = "No se encontraron pedidos para el total especificado"),
-        @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+        @ApiResponse(responseCode = "404", description = "No se encontraron pedidos para el total especificado",
+            content = @Content(mediaType = "application/json",
+            examples = @ExampleObject(value = """
+                {
+                    "error": "No encontrado",
+                    "descripcion": "No se encontraron pedidos para el total especificado."
+                }
+            """))),
+        @ApiResponse(responseCode = "500", description = "Error interno del servidor",
+            content = @Content(mediaType = "application/json",
+            examples = @ExampleObject(value = """
+                {
+                    "error": "Error interno",
+                    "descripcion": "Ocurrió un error interno del servidor."
+                }
+            """)))
     })
-    public ResponseEntity<List<PedidoResponseDTO>> buscarPorTotal(@PathVariable double pedTotal) {
-        return ResponseEntity.ok(pedidoService.buscarPorTotalDeCompra(pedTotal));
+    public ResponseEntity<?> buscarPorTotal(@PathVariable double pedTotal) {
+        List<PedidoResponseDTO> pedidos = pedidoService.buscarPorTotalDeCompra(pedTotal);
+        if (pedidos.isEmpty()) {
+            Map<String, String> error = Map.of(
+                "error", "No encontrado",
+                "descripcion", "No se encontraron pedidos para el total especificado."
+            );
+            return ResponseEntity.status(404).body(error);
+        }
+        return ResponseEntity.ok(pedidos);
     }
 
 
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////////                 POSTs                 ////////////////////////////////////////
+    ///////////////////////////                 POSTs                                /////////////////////////
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     ///Crear un nuevo pedido
@@ -151,8 +306,22 @@ public class PedidoController {
         @ApiResponse(responseCode = "201", description = "Pedido creado exitosamente",
             content = @Content(mediaType = "application/json",
             schema = @Schema(implementation = PedidoResponseDTO.class))),
-        @ApiResponse(responseCode = "400", description = "Solicitud inválida"),
-        @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+        @ApiResponse(responseCode = "400", description = "Solicitud inválida",
+            content = @Content(mediaType = "application/json",
+            examples = @ExampleObject(value = """
+                {
+                    "error": "Solicitud inválida",
+                    "descripcion": "Verifique los datos de la solicitud."
+                }
+            """))),
+        @ApiResponse(responseCode = "500", description = "Error interno del servidor",
+            content = @Content(mediaType = "application/json",
+            examples = @ExampleObject(value = """
+                {
+                    "error": "Error interno",
+                    "descripcion": "Ocurrió un error interno del servidor."
+                }
+            """)))
     })
     public ResponseEntity<PedidoResponseDTO> guardar(@RequestBody PedidoRequestDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(pedidoService.guardar(dto));
@@ -160,7 +329,7 @@ public class PedidoController {
 
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////////                 PUTs                 /////////////////////////////////////////
+    ///////////////////////////                 PUTs                                 /////////////////////////
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     //Actualizar un pedido existente
@@ -170,13 +339,42 @@ public class PedidoController {
         @ApiResponse(responseCode = "200", description = "Pedido actualizado exitosamente",
             content = @Content(mediaType = "application/json",
             schema = @Schema(implementation = PedidoResponseDTO.class))),
-        @ApiResponse(responseCode = "400", description = "Solicitud inválida"),
-        @ApiResponse(responseCode = "404", description = "Pedido no encontrado"),
-        @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+        @ApiResponse(responseCode = "400", description = "Solicitud inválida",
+            content = @Content(mediaType = "application/json",
+            examples = @ExampleObject(value = """
+                {
+                    "error": "Solicitud inválida",
+                    "descripcion": "Verifique los datos de la solicitud."
+                }
+            """))),
+        @ApiResponse(responseCode = "404", description = "Pedido no encontrado",
+            content = @Content(mediaType = "application/json",
+            examples = @ExampleObject(value = """
+                {
+                    "error": "No encontrado",
+                    "descripcion": "Pedido no encontrado."
+                }
+            """))),
+        @ApiResponse(responseCode = "500", description = "Error interno del servidor",
+            content = @Content(mediaType = "application/json",
+            examples = @ExampleObject(value = """
+                {
+                    "error": "Error interno",
+                    "descripcion": "Ocurrió un error interno del servidor."
+                }
+            """)))
     })
-    public ResponseEntity<PedidoResponseDTO> actualizar(@PathVariable Long id, 
+    public ResponseEntity<?> actualizar(@PathVariable Long id, 
         @RequestBody PedidoRequestDTO dto) {
-        return ResponseEntity.ok(pedidoService.actualizar(id, dto));
+        PedidoResponseDTO actualizado = pedidoService.actualizar(id, dto);
+        if (actualizado == null) {
+            Map<String, String> error = Map.of(
+                "error", "No encontrado",
+                "descripcion", "Pedido no encontrado."
+            );
+            return ResponseEntity.status(404).body(error);
+        }
+        return ResponseEntity.ok(actualizado);
     }
 
     //Actualizar el estado de pago de un pedido
@@ -186,16 +384,45 @@ public class PedidoController {
         @ApiResponse(responseCode = "200", description = "Estado de pago actualizado exitosamente",
             content = @Content(mediaType = "application/json",
             schema = @Schema(implementation = PedidoResponseDTO.class))),
-        @ApiResponse(responseCode = "400", description = "Solicitud inválida"),
-        @ApiResponse(responseCode = "404", description = "Pedido no encontrado"),
-        @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+        @ApiResponse(responseCode = "400", description = "Solicitud inválida",
+            content = @Content(mediaType = "application/json",
+            examples = @ExampleObject(value = """
+                {
+                    "error": "Solicitud inválida",
+                    "descripcion": "Verifique el estado de pago enviado."
+                }
+            """))),
+        @ApiResponse(responseCode = "404", description = "Pedido no encontrado",
+            content = @Content(mediaType = "application/json",
+            examples = @ExampleObject(value = """
+                {
+                    "error": "No encontrado",
+                    "descripcion": "Pedido no encontrado."
+                }
+            """))),
+        @ApiResponse(responseCode = "500", description = "Error interno del servidor",
+            content = @Content(mediaType = "application/json",
+            examples = @ExampleObject(value = """
+                {
+                    "error": "Error interno",
+                    "descripcion": "Ocurrió un error interno del servidor."
+                }
+            """)))
     })
-    public ResponseEntity<PedidoResponseDTO> actualizarPagado(@PathVariable Long id, @RequestBody boolean pedPagado) {
-        return ResponseEntity.ok(pedidoService.actualizarEstadoPago(id, pedPagado));
+    public ResponseEntity<?> actualizarPagado(@PathVariable Long id, @RequestBody boolean pedPagado) {
+        PedidoResponseDTO actualizado = pedidoService.actualizarEstadoPago(id, pedPagado);
+        if (actualizado == null) {
+            Map<String, String> error = Map.of(
+                "error", "No encontrado",
+                "descripcion", "Pedido no encontrado."
+            );
+            return ResponseEntity.status(404).body(error);
+        }
+        return ResponseEntity.ok(actualizado);
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////////                 DELETEs                 //////////////////////////////////////
+    ///////////////////////////                 DELETEs                               //////////////////////
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
     
     //Eliminar un pedido por ID
@@ -203,10 +430,24 @@ public class PedidoController {
     @Operation(summary = "Eliminar un pedido", description = "Permite eliminar un pedido específico utilizando su ID.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "204", description = "Pedido eliminado exitosamente"),
-        @ApiResponse(responseCode = "404", description = "Pedido no encontrado"),
-        @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+        @ApiResponse(responseCode = "404", description = "Pedido no encontrado",
+            content = @Content(mediaType = "application/json",
+            examples = @ExampleObject(value = """
+                {
+                    "error": "No encontrado",
+                    "descripcion": "Pedido no encontrado."
+                }
+            """))),
+        @ApiResponse(responseCode = "500", description = "Error interno del servidor",
+            content = @Content(mediaType = "application/json",
+            examples = @ExampleObject(value = """
+                {
+                    "error": "Error interno",
+                    "descripcion": "Ocurrió un error interno del servidor."
+                }
+            """)))
     })
-    public ResponseEntity<Void> eliminar(@PathVariable Long id) {
+    public ResponseEntity<?> eliminar(@PathVariable Long id) {
         pedidoService.eliminar(id);
         return ResponseEntity.noContent().build();
     }

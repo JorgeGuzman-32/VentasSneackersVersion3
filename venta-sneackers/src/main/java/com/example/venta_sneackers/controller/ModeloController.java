@@ -12,6 +12,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,9 +34,9 @@ public class ModeloController {
 
     private final ModeloService modeloService;
 
-    /////////s/////////////////////////////////////////////////////////////////////////////////////////////////    
-    ///////////////////////////                 GETs                 /////////////////////////////////////////
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////    
+    ///////////////////////////                 GETs                                 /////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////
     
 
     /// Obtener todos los modelos
@@ -44,11 +46,33 @@ public class ModeloController {
         @ApiResponse(responseCode = "200", description = "Modelos obtenidos exitosamente",
             content = @Content(mediaType = "application/json",
                 array = @ArraySchema(schema = @Schema(implementation = ModeloResponseDTO.class)))),
-        @ApiResponse(responseCode = "404", description = "No se encontraron modelos"),
-        @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+        @ApiResponse(responseCode = "404", description = "No se encontraron modelos",
+            content = @Content(mediaType = "application/json",
+            examples = @ExampleObject(value = """
+                {
+                    "error": "No encontrado",
+                    "descripcion": "No se encontraron modelos registrados en el sistema."
+                }
+            """))),
+        @ApiResponse(responseCode = "500", description = "Error interno del servidor",
+            content = @Content(mediaType = "application/json",
+            examples = @ExampleObject(value = """
+                {
+                    "error": "Error interno",
+                    "descripcion": "Ocurrió un error interno del servidor al procesar la solicitud."
+                }
+            """)))
     })
-    public ResponseEntity<List<ModeloResponseDTO>> obtenerTodos() {
-        return ResponseEntity.ok(modeloService.obtenerTodos());
+    public ResponseEntity<?> obtenerTodos() {
+        List<ModeloResponseDTO> modelos = modeloService.obtenerTodos();
+        if (modelos.isEmpty()) {
+            Map<String, String> error = Map.of(
+                "error", "No encontrado",
+                "descripcion", "No se encontraron modelos registrados en el sistema."
+            );
+            return ResponseEntity.status(404).body(error);
+        }
+        return ResponseEntity.ok(modelos);
     }
 
 
@@ -60,13 +84,34 @@ public class ModeloController {
         @ApiResponse(responseCode = "200", description = "Modelo obtenido exitosamente",
             content = @Content(mediaType = "application/json",
                 schema = @Schema(implementation = ModeloResponseDTO.class))),
-        @ApiResponse(responseCode = "404", description = "Modelo no encontrado"),
-        @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+        @ApiResponse(responseCode = "404", description = "Modelo no encontrado",
+            content = @Content(mediaType = "application/json",
+            examples = @ExampleObject(value = """
+                {
+                    "error": "No encontrado",
+                    "descripcion": "Modelo no encontrado con el ID proporcionado."
+                }
+            """))),
+        @ApiResponse(responseCode = "500", description = "Error interno del servidor",
+            content = @Content(mediaType = "application/json",
+            examples = @ExampleObject(value = """
+                {
+                    "error": "Error interno",
+                    "descripcion": "Ocurrió un error interno del servidor."
+                }
+            """)))
     })
-    public ResponseEntity<ModeloResponseDTO> obtenerPorId(@PathVariable Long id) {
-        return modeloService.obtenerPorId(id)
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+    public ResponseEntity<?> obtenerPorId(@PathVariable Long id) {
+        Optional<ModeloResponseDTO> modeloOpt = modeloService.obtenerPorId(id);
+        if (modeloOpt.isPresent()) {
+            return ResponseEntity.ok(modeloOpt.get());
+        } else {
+            Map<String, String> error = Map.of(
+                "error", "No encontrado",
+                "descripcion", "Modelo no encontrado con el ID proporcionado."
+            );
+            return ResponseEntity.status(404).body(error);
+        }
     }
 
 
@@ -77,11 +122,33 @@ public class ModeloController {
         @ApiResponse(responseCode = "200", description = "Modelos encontrados exitosamente",
             content = @Content(mediaType = "application/json",
                 array = @ArraySchema(schema = @Schema(implementation = ModeloResponseDTO.class)))),
-        @ApiResponse(responseCode = "404", description = "No se encontraron modelos para el nombre especificado"),
-        @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+        @ApiResponse(responseCode = "404", description = "No se encontraron modelos para el nombre especificado",
+            content = @Content(mediaType = "application/json",
+            examples = @ExampleObject(value = """
+                {
+                    "error": "No encontrado",
+                    "descripcion": "No se encontraron modelos con el nombre especificado."
+                }
+            """))),
+        @ApiResponse(responseCode = "500", description = "Error interno del servidor",
+            content = @Content(mediaType = "application/json",
+            examples = @ExampleObject(value = """
+                {
+                    "error": "Error interno",
+                    "descripcion": "Ocurrió un error interno del servidor."
+                }
+            """)))
     })
-    public ResponseEntity<List<ModeloResponseDTO>> buscarPorNombre(@PathVariable String modNombre) {
-        return ResponseEntity.ok(modeloService.buscarPorNombre(modNombre));
+    public ResponseEntity<?> buscarPorNombre(@PathVariable String modNombre) {
+        List<ModeloResponseDTO> modelos = modeloService.buscarPorNombre(modNombre);
+        if (modelos.isEmpty()) {
+            Map<String, String> error = Map.of(
+                "error", "No encontrado",
+                "descripcion", "No se encontraron modelos con el nombre especificado."
+            );
+            return ResponseEntity.status(404).body(error);
+        }
+        return ResponseEntity.ok(modelos);
     }
     
     /// Buscar modelos por temporada
@@ -91,18 +158,39 @@ public class ModeloController {
         @ApiResponse(responseCode = "200", description = "Modelos encontrados exitosamente",
             content = @Content(mediaType = "application/json",
                 array = @ArraySchema(schema = @Schema(implementation = ModeloResponseDTO.class)))),
-        @ApiResponse(responseCode = "404", description = "No se encontraron modelos para la temporada especificada"),
-        @ApiResponse(responseCode = "500", description = "Error interno del servidor")
-
+        @ApiResponse(responseCode = "404", description = "No se encontraron modelos para la temporada especificada",
+            content = @Content(mediaType = "application/json",
+            examples = @ExampleObject(value = """
+                {
+                    "error": "No encontrado",
+                    "descripcion": "No se encontraron modelos para la temporada especificada."
+                }
+            """))),
+        @ApiResponse(responseCode = "500", description = "Error interno del servidor",
+            content = @Content(mediaType = "application/json",
+            examples = @ExampleObject(value = """
+                {
+                    "error": "Error interno",
+                    "descripcion": "Ocurrió un error interno del servidor."
+                }
+            """)))
     })
-    public ResponseEntity<List<ModeloResponseDTO>> buscarPorTemporada(@PathVariable String modTemporada) {
-        return ResponseEntity.ok(modeloService.buscarPorTemporada(modTemporada));
+    public ResponseEntity<?> buscarPorTemporada(@PathVariable String modTemporada) {
+        List<ModeloResponseDTO> modelos = modeloService.buscarPorTemporada(modTemporada);
+        if (modelos.isEmpty()) {
+            Map<String, String> error = Map.of(
+                "error", "No encontrado",
+                "descripcion", "No se encontraron modelos para la temporada especificada."
+            );
+            return ResponseEntity.status(404).body(error);
+        }
+        return ResponseEntity.ok(modelos);
     }
 
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////    
-    ///////////////////////////                 POSTs                 ////////////////////////////////////////
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////                 POSTs                                ////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////
     
     /// Crear un nuevo modelo
     @PostMapping
@@ -111,8 +199,24 @@ public class ModeloController {
         @ApiResponse(responseCode = "201", description = "Modelo creado exitosamente",
             content = @Content(mediaType = "application/json",
                 schema = @Schema(implementation = ModeloResponseDTO.class),
-                examples = @ExampleObject(name = "EjemploModelo", value = "{\"modNombre\": \"Air Max\", \"modTemporada\": \"Verano\", \"modAnioLanzamiento\": 2024, \"modEdicionLimitada\": false, \"modDescripcion\": \"Zapatilla deportiva de alto rendimiento\"}"))),
-        @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+                examples = @ExampleObject(name = "EjemploModelo", value = 
+                "{\"modNombre\": \"Air Max\",\"modTemporada\": \"Verano\", \"modAnioLanzamiento\": 2024, \"modEdicionLimitada\": false, \"modDescripcion\": \"Zapatilla deportiva de alto rendimiento\"}"))),
+        @ApiResponse(responseCode = "400", description = "Solicitud inválida",
+            content = @Content(mediaType = "application/json",
+            examples = @ExampleObject(value = """
+                {
+                    "error": "Solicitud inválida",
+                    "descripcion": "Los datos proporcionados para el modelo no son válidos."
+                }
+            """))),
+        @ApiResponse(responseCode = "500", description = "Error interno del servidor",
+            content = @Content(mediaType = "application/json",
+            examples = @ExampleObject(value = """
+                {
+                    "error": "Error interno",
+                    "descripcion": "Ocurrió un error interno al intentar registrar el modelo."
+                }
+            """)))
     })
     public ResponseEntity<ModeloResponseDTO> crearModelo(
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
@@ -120,15 +224,16 @@ public class ModeloController {
                     required = true,
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = ModeloRequestDTO.class),
-                            examples = @ExampleObject(name = "EjemploModelo", value = "{\"modNombre\": \"Air Max\", \"modTemporada\": \"Verano\", \"modAnioLanzamiento\": 2024, \"modEdicionLimitada\": false, \"modDescripcion\": \"Zapatilla deportiva de alto rendimiento\"}")))
+                            examples = @ExampleObject(name = "EjemploModelo",
+                            value = "{\"modNombre\": \"Air Max\", \"modTemporada\": \"Verano\", \"modAnioLanzamiento\": 2024, \"modEdicionLimitada\": false, \"modDescripcion\": \"Zapatilla deportiva de alto rendimiento\"}")))
             @RequestBody ModeloRequestDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(modeloService.guardar(dto));
     }
 
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////                 PUTs                 ///////////////////////////////
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////                 PUTs                                ///////////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////
     
     /// Actualizar un modelo existente
     @PutMapping("/{id}")
@@ -137,10 +242,32 @@ public class ModeloController {
         @ApiResponse(responseCode = "200", description = "Modelo actualizado exitosamente",
             content = @Content(mediaType = "application/json",
                 schema = @Schema(implementation = ModeloResponseDTO.class))),
-        @ApiResponse(responseCode = "404", description = "Modelo no encontrado"),
-        @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+        @ApiResponse(responseCode = "400", description = "Solicitud inválida",
+            content = @Content(mediaType = "application/json",
+            examples = @ExampleObject(value = """
+                {
+                    "error": "Solicitud inválida",
+                    "descripcion": "Los datos de actualización proporcionados no son válidos."
+                }
+            """))),
+        @ApiResponse(responseCode = "404", description = "Modelo no encontrado",
+            content = @Content(mediaType = "application/json",
+            examples = @ExampleObject(value = """
+                {
+                    "error": "No encontrado",
+                    "descripcion": "No se encontró el modelo especificado para actualizar."
+                }
+            """))),
+        @ApiResponse(responseCode = "500", description = "Error interno del servidor",
+            content = @Content(mediaType = "application/json",
+            examples = @ExampleObject(value = """
+                {
+                    "error": "Error interno",
+                    "descripcion": "Ocurrió un error interno del servidor."
+                }
+            """)))
     })
-    public ResponseEntity<ModeloResponseDTO> actualizarModelo(
+    public ResponseEntity<?> actualizarModelo(
             @PathVariable Long id,
             @io.swagger.v3.oas.annotations.parameters.RequestBody(
                     description = "Modelo con los datos actualizados",
@@ -148,27 +275,46 @@ public class ModeloController {
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = ModeloRequestDTO.class)))
             @RequestBody ModeloRequestDTO dto) {
-        return modeloService.actualizar(id, dto)
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+        Optional<ModeloResponseDTO> actualizadoOpt = modeloService.actualizar(id, dto);
+        if (actualizadoOpt.isPresent()) {
+            return ResponseEntity.ok(actualizadoOpt.get());
+        } else {
+            Map<String, String> error = Map.of(
+                "error", "No encontrado",
+                "descripcion", "No se encontró el modelo especificado para actualizar."
+            );
+            return ResponseEntity.status(404).body(error);
+        }
     }
 
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////                 DELETEs                 /////////////////////////////
+    ////////////////////////////////////                 DELETEs                             /////////////
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
     
     /// Eliminar un modelo por ID
     @DeleteMapping("/{id}")
     @Operation(summary = "Eliminar modelo por ID", description = "Permite eliminar un modelo específico según su ID")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Modelo eliminado exitosamente",
+        @ApiResponse(responseCode = "204", description = "Modelo eliminado exitosamente"),
+        @ApiResponse(responseCode = "404", description = "Modelo no encontrado",
             content = @Content(mediaType = "application/json",
-            schema = @Schema(implementation = Void.class))),
-        @ApiResponse(responseCode = "404", description = "Modelo no encontrado"),
-        @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+            examples = @ExampleObject(value = """
+                {
+                    "error": "No encontrado",
+                    "descripcion": "El modelo que intenta eliminar no existe."
+                }
+            """))),
+        @ApiResponse(responseCode = "500", description = "Error interno del servidor",
+            content = @Content(mediaType = "application/json",
+            examples = @ExampleObject(value = """
+                {
+                    "error": "Error interno",
+                    "descripcion": "Ocurrió un error interno al intentar eliminar el modelo."
+                }
+            """)))
     })
-    public ResponseEntity<Void> eliminarModelo(@PathVariable Long id) {
+    public ResponseEntity<?> eliminarModelo(@PathVariable Long id) {
         modeloService.eliminar(id);
         return ResponseEntity.noContent().build();
     }

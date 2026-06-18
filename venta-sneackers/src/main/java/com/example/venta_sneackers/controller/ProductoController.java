@@ -2,6 +2,7 @@ package com.example.venta_sneackers.controller;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.venta_sneackers.Service.ProductoService;
@@ -29,6 +31,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
 @RestController
+@ResponseBody
 @RequestMapping("/api/V1/productos")
 @Tag(name = "Producto", description = "Endpoints para gestionar los productos disponibles en la tienda")
 @RequiredArgsConstructor
@@ -37,7 +40,7 @@ public class ProductoController {
     private final ProductoService productoService;
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////////                 GETs                 /////////////////////////////////////////
+    ///////////////////////////                 GETs                                 /////////////////////////
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     //Obtener todos los productos
@@ -51,10 +54,10 @@ public class ProductoController {
             content = @Content(mediaType = "application/json",
             examples = @ExampleObject(value = """
                 {
-                    "error": "Ocurrió un error al obtener los productos"
+                    "error": "Error interno",
+                    "descripcion": "Ocurrió un error al obtener los productos"
                 }
-            """),
-            schema = @Schema(implementation = ProductoResponseDTO.class)))
+            """)))
     })
     public ResponseEntity<List<ProductoResponseDTO>> obtenerTodos() {
         return ResponseEntity.ok(productoService.obtenerTodos());
@@ -72,34 +75,23 @@ public class ProductoController {
             content = @Content(mediaType = "application/json",
             examples = @ExampleObject(value = """
                 {
-                    "Mensaje": "Producto no encontrado"
+                    "error": "No encontrado",
+                    "descripcion": "Producto no encontrado"
                 }
-            """),            
-            schema = @Schema(implementation = ProductoResponseDTO.class))),
-         @ApiResponse(responseCode = "500", description = "Error interno del servidor",
-            content = @Content(mediaType = "application/json",
-            examples = @ExampleObject(value = """
-                {
-                    "error": "Ocurrió un error al obtener el producto"
-                }
-            """),
-            schema = @Schema(implementation = ProductoResponseDTO.class))),
-        @ApiResponse(responseCode = "500", description = "Error interno del servidor",
-            content = @Content(mediaType = "application/json",
-            examples = @ExampleObject(value = """
-                {
-                    "error": "Ocurrió un error al obtener el producto"
-                }
-            """),
-            schema = @Schema(implementation = ProductoResponseDTO.class)))
+            """)))
     })
-    
-    public ResponseEntity<ProductoResponseDTO> obtenerPorId(@PathVariable Long id) {
-        return productoService.obtenerPorId(id)
-            .map(ResponseEntity::ok)
-            .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<?> obtenerPorId(@PathVariable Long id) {
+        java.util.Optional<ProductoResponseDTO> productoOpt = productoService.obtenerPorId(id);
+        if (productoOpt.isPresent()) {
+            return ResponseEntity.ok(productoOpt.get());
+        } else {
+            Map<String, String> error = Map.of(
+                "error", "No encontrado",
+                "descripcion", "Producto no encontrado"
+            );
+            return ResponseEntity.status(404).body(error);
+        }
     }
-
 
     //Buscar productos por nombre
     @GetMapping("/buscar/{proNombre}")
@@ -112,23 +104,21 @@ public class ProductoController {
             content = @Content(mediaType = "application/json",
             examples = @ExampleObject(value = """
                 {
-                    "Mensaje": "No se encontraron productos con el nombre 'nombreEjemplo'"
+                    "error": "No encontrado",
+                    "descripcion": "No se encontraron productos con el nombre proporcionado."
                 }
-            """),
-            schema = @Schema(implementation = ProductoResponseDTO.class))),
-         @ApiResponse(responseCode = "500", description = "Error interno del servidor",
-            content = @Content(mediaType = "application/json",
-            examples = @ExampleObject(value = """
-                {
-                    "error": "Ocurrió un error al buscar los productos por nombre"
-                }
-            """),
-            schema = @Schema(implementation = ProductoResponseDTO.class))),
-        @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+            """)))
     })
-    
-    public ResponseEntity<List<ProductoResponseDTO>> buscarPorNombre(@PathVariable String proNombre) {
-        return ResponseEntity.ok(productoService.buscarPorNombre(proNombre));
+    public ResponseEntity<?> buscarPorNombre(@PathVariable String proNombre) {
+        List<ProductoResponseDTO> productos = productoService.buscarPorNombre(proNombre);
+        if (productos.isEmpty()) {
+            Map<String, String> error = Map.of(
+                "error", "No encontrado",
+                "descripcion", "No se encontraron productos con el nombre '" + proNombre + "'"
+            );
+            return ResponseEntity.status(404).body(error);
+        }
+        return ResponseEntity.ok(productos);
     }
 
     //Buscar productos por marca
@@ -142,21 +132,29 @@ public class ProductoController {
             content = @Content(mediaType = "application/json",
             examples = @ExampleObject(value = """
                 {
-                    "Mensaje": "No se encontraron productos con la marca 'marcaEjemplo'"
+                    "error": "No encontrado",
+                    "descripcion": "No se encontraron productos con la marca proporcionada."
                 }
             """))),
         @ApiResponse(responseCode = "500", description = "Error interno del servidor",
             content = @Content(mediaType = "application/json",
             examples = @ExampleObject(value = """
                 {
-                    "error": "Ocurrió un error al buscar los productos por marca"
+                    "error": "Error interno",
+                    "descripcion": "Ocurrió un error al buscar los productos por marca"
                 }
-            """),
-            schema = @Schema(implementation = ProductoResponseDTO.class))
-        )
+            """)))
     })
-    public ResponseEntity<List<ProductoResponseDTO>> buscarPorMarca(@PathVariable String proMarca) {
-        return ResponseEntity.ok(productoService.buscarPorMarca(proMarca));
+    public ResponseEntity<?> buscarPorMarca(@PathVariable String proMarca) {
+        List<ProductoResponseDTO> productos = productoService.buscarPorMarca(proMarca);
+        if (productos.isEmpty()) {
+            Map<String, String> error = Map.of(
+                "error", "No encontrado",
+                "descripcion", "No se encontraron productos con la marca '" + proMarca + "'"
+            );
+            return ResponseEntity.status(404).body(error);
+        }
+        return ResponseEntity.ok(productos);
     }   
     
 
@@ -171,20 +169,29 @@ public class ProductoController {
             content = @Content(mediaType = "application/json",
             examples = @ExampleObject(value = """
                 {
-                    "Mensaje": "No se encontraron productos con el color 'colorEjemplo'"
+                    "error": "No encontrado",
+                    "descripcion": "No se encontraron productos con el color proporcionado."
                 }
             """))),
         @ApiResponse(responseCode = "500", description = "Error interno del servidor",
             content = @Content(mediaType = "application/json",
             examples = @ExampleObject(value = """
                 {
-                    "error": "Ocurrió un error al buscar los productos por color"
+                    "error": "Error interno",
+                    "descripcion": "Ocurrió un error al buscar los productos por color"
                 }
-            """),
-            schema = @Schema(implementation = ProductoResponseDTO.class)))
+            """)))
     })
-    public ResponseEntity<List<ProductoResponseDTO>> buscarPorColor(@PathVariable String proColor) {
-        return ResponseEntity.ok(productoService.proColor(proColor));
+    public ResponseEntity<?> buscarPorColor(@PathVariable String proColor) {
+        List<ProductoResponseDTO> productos = productoService.proColor(proColor);
+        if (productos.isEmpty()) {
+            Map<String, String> error = Map.of(
+                "error", "No encontrado",
+                "descripcion", "No se encontraron productos con el color '" + proColor + "'"
+            );
+            return ResponseEntity.status(404).body(error);
+        }
+        return ResponseEntity.ok(productos);
     }           
 
 
@@ -199,25 +206,33 @@ public class ProductoController {
             content = @Content(mediaType = "application/json",
             examples = @ExampleObject(value = """
                 {
-                    "Mensaje": "No se encontraron productos con el género 'generoEjemplo'"
+                    "error": "No encontrado",
+                    "descripcion": "No se encontraron productos con el género proporcionado."
                 }
             """))),
         @ApiResponse(responseCode = "500", description = "Error interno del servidor",
             content = @Content(mediaType = "application/json",
             examples = @ExampleObject(value = """
                 {
-                    "error": "Ocurrió un error al buscar los productos por género"
+                    "error": "Error interno",
+                    "descripcion": "Ocurrió un error al buscar los productos por género"
                 }
-            """),
-            schema = @Schema(implementation = ProductoResponseDTO.class)))
+            """)))
     })
-    public ResponseEntity<List<ProductoResponseDTO>> buscarPorGenero(@PathVariable String proGenero) {
-        return ResponseEntity.ok(productoService.proGenero(proGenero));
-
+    public ResponseEntity<?> buscarPorGenero(@PathVariable String proGenero) {
+        List<ProductoResponseDTO> productos = productoService.proGenero(proGenero);
+        if (productos.isEmpty()) {
+            Map<String, String> error = Map.of(
+                "error", "No encontrado",
+                "descripcion", "No se encontraron productos con el género '" + proGenero + "'"
+            );
+            return ResponseEntity.status(404).body(error);
+        }
+        return ResponseEntity.ok(productos);
     }   
     
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////////                 PUTs                 /////////////////////////////////////////
+    ///////////////////////////                 PUTs                                 /////////////////////////
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -232,25 +247,30 @@ public class ProductoController {
             content = @Content(mediaType = "application/json",
             examples = @ExampleObject(value = """
                 {
-                    "Mensaje": "Producto no encontrado"
+                    "error": "No encontrado",
+                    "descripcion": "Producto no encontrado"
                 }
             """))),
         @ApiResponse(responseCode = "400", description = "Solicitud inválida",
             content = @Content(mediaType = "application/json",
             examples = @ExampleObject(value = """
                 {
-                    "error": "Solicitud inválida. El nuevo stock debe ser un número entero no negativo."
+                    "error": "Solicitud inválida",
+                    "descripcion": "El nuevo stock debe ser un número entero no negativo."
                 }
-            """),
-            schema = @Schema(implementation = ProductoResponseDTO.class))),
+            """))),
         @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
-    public ResponseEntity<Void> actualizarStock(@PathVariable Long id, Integer nuevoStock) {    
+    public ResponseEntity<?> actualizarStock(@PathVariable Long id, Integer nuevoStock) {    
         boolean actualizado = productoService.actualizarStock(id, nuevoStock);
         if (actualizado) {
             return ResponseEntity.ok().build();
         } else {
-            return ResponseEntity.notFound().build();
+            Map<String, String> error = Map.of(
+                "error", "No encontrado",
+                "descripcion", "Producto no encontrado"
+            );
+            return ResponseEntity.status(404).body(error);
         }
     }       
 
@@ -265,31 +285,36 @@ public class ProductoController {
             content = @Content(mediaType = "application/json",
             examples = @ExampleObject(value = """
                 {
-                    "Mensaje": "Producto no encontrado"
+                    "error": "No encontrado",
+                    "descripcion": "Producto no encontrado"
                 }
             """))),
         @ApiResponse(responseCode = "400", description = "Solicitud inválida",
             content = @Content(mediaType = "application/json",
             examples = @ExampleObject(value = """
                 {
-                    "error": "Solicitud inválida. El nuevo precio debe ser un número decimal positivo."
+                    "error": "Solicitud inválida",
+                    "descripcion": "El nuevo precio debe ser un número decimal positivo."
                 }
-            """),
-            schema = @Schema(implementation = ProductoResponseDTO.class))),
+            """))),
         @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
-    public ResponseEntity<Void> actualizarPrecio(@PathVariable Long id, BigDecimal nuevoPrecio) {    
+    public ResponseEntity<?> actualizarPrecio(@PathVariable Long id, BigDecimal nuevoPrecio) {    
         boolean actualizado = productoService.actualizarPrecio(id, nuevoPrecio);
         if (actualizado) {
             return ResponseEntity.ok().build();
         } else {
-            return ResponseEntity.notFound().build();
+            Map<String, String> error = Map.of(
+                "error", "No encontrado",
+                "descripcion", "Producto no encontrado"
+            );
+            return ResponseEntity.status(404).body(error);
         }
     }       
 
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////////                 POSTs                 ////////////////////////////////////////
+    ///////////////////////////                 POSTs                                /////////////////////////
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     //Crear nuevo producto
@@ -303,29 +328,29 @@ public class ProductoController {
             content = @Content(mediaType = "application/json",
             examples = @ExampleObject(value = """
                 {
-                    "error": "Solicitud inválida. Verifique que todos los campos requeridos estén presentes y sean válidos."
+                    "error": "Solicitud inválida",
+                    "descripcion": "Verifique que todos los campos requeridos estén presentes y sean válidos."
                 }
-            """),
-            schema = @Schema(implementation = ProductoResponseDTO.class))
-        ),
+            """))),
         @ApiResponse(responseCode = "500", description = "Error interno del servidor",
             content = @Content(mediaType = "application/json",
             examples = @ExampleObject(value = """
                 {
-                    "error": "Ocurrió un error al crear el producto"
+                    "error": "Error interno",
+                    "descripcion": "Ocurrió un error al crear el producto"
                 }
-            """),
-            schema = @Schema(implementation = ProductoResponseDTO.class)))
+            """)))
     })
-    public ResponseEntity<ProductoResponseDTO> crearProducto(@RequestBody ProductoRequestDTO dto)   {
+    public ResponseEntity<ProductoResponseDTO> crearProducto(@RequestBody ProductoRequestDTO dto){
         ProductoResponseDTO created = productoService.crearProducto(dto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(created);     
-
+    
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+             
     }
     
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////////                 DELETEs                 //////////////////////////////////////
+    ///////////////////////////                 DELETEs                               //////////////////////
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
     
     @DeleteMapping("/{id}")
@@ -338,25 +363,29 @@ public class ProductoController {
             content = @Content(mediaType = "application/json",
             examples = @ExampleObject(value = """
                 {
-                    "Mensaje": "Producto no encontrado"
+                    "error": "No encontrado",
+                    "descripcion": "Producto no encontrado"
                 }
-            """),
-            schema = @Schema(implementation = ProductoResponseDTO.class))),
+            """))),
         @ApiResponse(responseCode = "500", description = "Error interno del servidor",
             content = @Content(mediaType = "application/json",
             examples = @ExampleObject(value = """
                 {
-                    "error": "Ocurrió un error al eliminar el producto"
+                    "error": "Error interno",
+                    "descripcion": "Ocurrió un error al eliminar el producto"
                 }
-            """),
-            schema = @Schema(implementation = ProductoResponseDTO.class)))
+            """)))
     })
-    public ResponseEntity<Void> eliminarProducto(@PathVariable Long id) {           
+    public ResponseEntity<?> eliminarProducto(@PathVariable Long id) {          
         boolean eliminado = productoService.eliminarProducto(id);
         if (eliminado) {
             return ResponseEntity.ok().build();
         } else {
-            return ResponseEntity.notFound().build();
+            Map<String, String> error = Map.of(
+                "error", "No encontrado",
+                "descripcion", "Producto no encontrado"
+            );
+            return ResponseEntity.status(404).body(error);
         }
     }   
 }
