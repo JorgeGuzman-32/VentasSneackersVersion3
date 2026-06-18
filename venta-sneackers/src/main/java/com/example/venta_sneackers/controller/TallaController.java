@@ -49,23 +49,8 @@ public class TallaController {
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Tallas obtenidas exitosamente",
             content = @Content(mediaType = "application/json",
-                examples = @ExampleObject(value = """
-                    [
-                        {
-                            "id": 1,
-                            "tallNombre": "Talla 42",
-                            "unidad": "EU"
-                        },
-                        {
-                            "id": 2,
-                            "tallNombre": "Talla 9",
-                            "unidad": "US"
-                        }
-                    ]
-                """),
             schema = @Schema(implementation = TallaResponseDTO.class))),
-            
-         @ApiResponse(responseCode = "404", description = "No se encontraron tallas",
+        @ApiResponse(responseCode = "404", description = "No se encontraron tallas",
             content = @Content(mediaType = "application/json",
             examples = @ExampleObject(value = """
                 {
@@ -78,10 +63,10 @@ public class TallaController {
                 {
                     "error": "Ocurrió un error al procesar la solicitud"
                 }
-            """))
-            )  
-          })
-
+            """)))  
+      
+    })
+    
     public ResponseEntity<List<TallaResponseDTO>> obtenerTodas() {
         return ResponseEntity.ok(tallaService.obtenerTodos());
     }
@@ -131,11 +116,6 @@ public class TallaController {
     @ApiResponses(value = {
         @ApiResponse(responseCode = "201", description = "Talla creada exitosamente",
             content = @Content(mediaType = "application/json",
-                examples = @ExampleObject(value = """
-                    {
-                        "OK": "Talla creada exitosamente"
-                    }
-                """),
             schema = @Schema(implementation = TallaResponseDTO.class))),
         @ApiResponse(responseCode = "400", description = "Solicitud inválida",
             content = @Content(mediaType = "application/json",
