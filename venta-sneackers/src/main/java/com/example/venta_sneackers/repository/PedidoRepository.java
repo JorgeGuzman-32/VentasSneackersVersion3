@@ -58,4 +58,7 @@ public interface PedidoRepository extends JpaRepository<Pedido, Long> {
     @Query("SELECT p FROM Pedido p WHERE p.pedPagado = :pedPagado")
     List<Pedido> findPedidosByPagado(@Param("pedPagado") boolean pedPagado);
 
+    List<Pedido> findByPedFechaCompraBetween(String start, String end);
+
+    List<Pedido> findByCliente_IdClienteAndPedPagado(Long clienteId, boolean pedPagado);
 }

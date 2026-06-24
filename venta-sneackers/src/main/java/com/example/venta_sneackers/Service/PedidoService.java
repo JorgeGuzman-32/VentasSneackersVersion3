@@ -125,4 +125,38 @@ public class PedidoService {
                 .map(this::toResponseDTO)
                 .collect(Collectors.toList());
     }
+
+    public List<Pedido> getAllPedidos() {
+    return repository.findAll();
+    }
+
+    public Pedido getPedidoById(Long id) {
+        return repository.findById(id).orElseThrow();
+    }
+
+    public List<Pedido> getPedidosByFecha(String fecha) {
+        return repository.findByPedFechaCompra(fecha);
+    }
+
+    public List<Pedido> getPedidosByCliente(Long clienteId) {
+        return repository.findPedidosByClienteId(clienteId);
+    }
+
+    public List<Pedido> getPedidosByEstado(String estado) {
+        return repository.findByPedPagado(estado.equalsIgnoreCase("pagado"));
+    }
+
+    public List<Pedido> getPedidosBetweenFechas(String start, String end) {
+        return repository.findByPedFechaCompraBetween(start, end);
+    }
+
+    public List<Pedido> getPedidosByClienteAndEstado(Long clienteId, String estado) {
+        return repository.findByCliente_IdClienteAndPedPagado(clienteId, estado.equalsIgnoreCase("pagado"));
+    }
+
+    public Double getTotalPedidosByCliente(Long clienteId) {
+        return repository.findPedidosByClienteId(clienteId).stream()
+                .mapToDouble(p -> p.getPedTotal().doubleValue())
+                .sum();
+    }
 }

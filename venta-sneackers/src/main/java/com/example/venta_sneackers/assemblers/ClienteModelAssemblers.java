@@ -1,8 +1,8 @@
-package com.example.venta_sneackers.assamblers;
+package com.example.venta_sneackers.assemblers;
 
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
-import com.example.venta_sneackers.controllers.ClienteControllerV2;
+import com.example.venta_sneackers.controller.ClienteControllerV2;
 import com.example.venta_sneackers.model.Cliente;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.server.RepresentationModelAssembler;
@@ -14,8 +14,7 @@ public class ClienteModelAssemblers implements RepresentationModelAssembler<Clie
     @Override
     public EntityModel<Cliente> toModel(Cliente cliente) {
         return EntityModel.of(cliente,
-                linkTo(methodOn(ClienteControllerV2.class).getCliente(cliente.getId())).withSelfRel(),
+                linkTo(methodOn(ClienteControllerV2.class).getCliente(cliente.getIdCliente())).withSelfRel(),
                 linkTo(methodOn(ClienteControllerV2.class).getAllClientes()).withRel("clientes"));
-    }   
-
+    }
 }

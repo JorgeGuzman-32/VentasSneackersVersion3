@@ -113,5 +113,27 @@ public class ClienteService {
             )).collect(Collectors.toList());
     }
 
-	
+	public List<Cliente> getAllClientes() {
+    return repository.findAll();
+}
+
+public Cliente getClienteById(Long id) {
+    return repository.findById(id).orElseThrow();
+}
+
+public Cliente createCliente(Cliente cliente) {
+    return repository.save(cliente);
+}
+
+public Cliente updateCliente(Long id, Cliente cliente) {
+    Cliente existing = repository.findById(id).orElseThrow();
+    existing.setCliNombre(cliente.getCliNombre());
+    existing.setCliDireccion(cliente.getCliDireccion());
+    existing.setCliEstado(cliente.getCliEstado());
+    return repository.save(existing);
+}
+
+public void deleteCliente(Long id) {
+    repository.deleteById(id);
+}
 }

@@ -37,7 +37,7 @@ public class Pedido {
     private BigDecimal pedTotal;
 
     @Column(nullable = false)
-    private boolean pedPagado;
+    private Boolean pedPagado;
 
     @ManyToOne
     @JoinColumn(name = "id_cliente", nullable = false)
