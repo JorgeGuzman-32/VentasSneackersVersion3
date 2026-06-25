@@ -14,6 +14,7 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 public class ProductoRequestDTO {
 
+    
     @NotBlank(message = "El nombre del producto no puede estar vacío")
     private String proNombre;
 

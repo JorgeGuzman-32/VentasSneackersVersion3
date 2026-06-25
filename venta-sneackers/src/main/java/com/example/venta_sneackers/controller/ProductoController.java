@@ -4,6 +4,9 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.MediaTypes;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -20,7 +23,6 @@ import com.example.venta_sneackers.dto.ProductoRequestDTO;
 import com.example.venta_sneackers.dto.ProductoResponseDTO;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -30,11 +32,15 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+
 @RestController
 @ResponseBody
 @RequestMapping("/api/V1/productos")
 @Tag(name = "Producto", description = "Endpoints para gestionar los productos disponibles en la tienda")
 @RequiredArgsConstructor
+@SuppressWarnings("null")
 public class ProductoController {
 
     private final ProductoService productoService;
@@ -43,13 +49,12 @@ public class ProductoController {
     ///////////////////////////                 GETs                                 /////////////////////////
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    //Obtener todos los productos
-    @GetMapping
+    // GET - Obtener todos los productos
+    @GetMapping(produces = MediaTypes.HAL_JSON_VALUE)
     @Operation(summary = "Obtener todos los productos", description = "Devuelve una lista de todos los productos disponibles")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Lista de productos obtenida exitosamente",
-            content = @Content(mediaType = "application/json",
-            array = @ArraySchema(schema = @Schema(implementation = ProductoResponseDTO.class)))),
+            content = @Content(mediaType = "application/hal+json")),
         @ApiResponse(responseCode = "500", description = "Error interno del servidor",
             content = @Content(mediaType = "application/json",
             examples = @ExampleObject(value = """
@@ -59,18 +64,31 @@ public class ProductoController {
                 }
             """)))
     })
-    public ResponseEntity<List<ProductoResponseDTO>> obtenerTodos() {
-        return ResponseEntity.ok(productoService.obtenerTodos());
+    public ResponseEntity<?> obtenerTodos() {
+        List<EntityModel<ProductoResponseDTO>> productos = productoService.obtenerTodos().stream()
+                .map(this::toModel)
+                .toList();
+
+        CollectionModel<EntityModel<ProductoResponseDTO>> collection = CollectionModel.of(
+                productos,
+                linkTo(methodOn(ProductoController.class).obtenerTodos()).withSelfRel(),
+                linkTo(methodOn(ProductoController.class).obtenerPorId(null)).withRel("buscarPorId"),
+                linkTo(methodOn(ProductoController.class).buscarPorNombre(null)).withRel("buscarPorNombre"),
+                linkTo(methodOn(ProductoController.class).buscarPorMarca(null)).withRel("buscarPorMarca"),
+                linkTo(methodOn(ProductoController.class).buscarPorColor(null)).withRel("buscarPorColor"),
+                linkTo(methodOn(ProductoController.class).buscarPorGenero(null)).withRel("buscarPorGenero")
+        );
+
+        return ResponseEntity.ok(collection);
     }
 
 
-    //Obtener producto por ID
-    @GetMapping("/{id}")
+    // GET - Obtener producto por ID
+    @GetMapping(value = "/{id}", produces = MediaTypes.HAL_JSON_VALUE)
     @Operation(summary = "Obtener producto por ID", description = "Devuelve un producto específico según su ID")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Producto obtenido exitosamente",
-            content = @Content(mediaType = "application/json",
-            schema = @Schema(implementation = ProductoResponseDTO.class))),
+            content = @Content(mediaType = "application/hal+json")),
         @ApiResponse(responseCode = "404", description = "Producto no encontrado",
             content = @Content(mediaType = "application/json",
             examples = @ExampleObject(value = """
@@ -81,9 +99,9 @@ public class ProductoController {
             """)))
     })
     public ResponseEntity<?> obtenerPorId(@PathVariable Long id) {
-        java.util.Optional<ProductoResponseDTO> productoOpt = productoService.obtenerPorId(id);
+        java.util.Optional<ProductoResponseDTO> productoOpt = productoService.obtenerProdPorId(id);
         if (productoOpt.isPresent()) {
-            return ResponseEntity.ok(productoOpt.get());
+            return ResponseEntity.ok(toModel(productoOpt.get()));
         } else {
             Map<String, String> error = Map.of(
                 "error", "No encontrado",
@@ -93,13 +111,12 @@ public class ProductoController {
         }
     }
 
-    //Buscar productos por nombre
-    @GetMapping("/buscar/{proNombre}")
+    // GET - Buscar productos por nombre
+    @GetMapping(value = "/buscar/{proNombre}", produces = MediaTypes.HAL_JSON_VALUE)
     @Operation(summary = "Buscar productos por nombre", description = "Devuelve una lista de productos que coinciden con el nombre proporcionado")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Lista de productos obtenida exitosamente",
-            content = @Content(mediaType = "application/json",
-            array = @ArraySchema(schema = @Schema(implementation = ProductoResponseDTO.class)))),
+            content = @Content(mediaType = "application/hal+json")),
         @ApiResponse(responseCode = "404", description = "No se encontraron productos con el nombre proporcionado",
             content = @Content(mediaType = "application/json",
             examples = @ExampleObject(value = """
@@ -118,16 +135,23 @@ public class ProductoController {
             );
             return ResponseEntity.status(404).body(error);
         }
-        return ResponseEntity.ok(productos);
+        List<EntityModel<ProductoResponseDTO>> resources = productos.stream()
+            .map(this::toModel)
+            .toList();
+
+        return ResponseEntity.ok(CollectionModel.of(
+            resources,
+            linkTo(methodOn(ProductoController.class).buscarPorNombre(proNombre)).withSelfRel(),
+            linkTo(methodOn(ProductoController.class).obtenerTodos()).withRel("productos")
+        ));
     }
 
-    //Buscar productos por marca
-    @GetMapping("/buscar/marca/{proMarca}")
+    // GET - Buscar productos por marca
+    @GetMapping(value = "/buscar/marca/{proMarca}", produces = MediaTypes.HAL_JSON_VALUE)
     @Operation(summary = "Buscar productos por marca", description = "Devuelve una lista de productos que coinciden con la marca proporcionada")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Lista de productos obtenida exitosamente",
-            content = @Content(mediaType = "application/json",
-            array = @ArraySchema(schema = @Schema(implementation = ProductoResponseDTO.class)))),
+            content = @Content(mediaType = "application/hal+json")),
         @ApiResponse(responseCode = "404", description = "No se encontraron productos con la marca proporcionada",
             content = @Content(mediaType = "application/json",
             examples = @ExampleObject(value = """
@@ -154,17 +178,24 @@ public class ProductoController {
             );
             return ResponseEntity.status(404).body(error);
         }
-        return ResponseEntity.ok(productos);
+        List<EntityModel<ProductoResponseDTO>> resources = productos.stream()
+            .map(this::toModel)
+            .toList();
+
+        return ResponseEntity.ok(CollectionModel.of(
+            resources,
+            linkTo(methodOn(ProductoController.class).buscarPorMarca(proMarca)).withSelfRel(),
+            linkTo(methodOn(ProductoController.class).obtenerTodos()).withRel("productos")
+        ));
     }   
     
 
-    //Buscar productos por talla
-    @GetMapping("/buscar/color/{proColor}")
+    // GET - Buscar productos por talla
+    @GetMapping(value = "/buscar/color/{proColor}", produces = MediaTypes.HAL_JSON_VALUE)
     @Operation(summary = "Buscar productos por color", description = "Devuelve una lista de productos que coinciden con el color proporcionado")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Lista de productos obtenida exitosamente",
-            content = @Content(mediaType = "application/json",
-            array = @ArraySchema(schema = @Schema(implementation = ProductoResponseDTO.class)))),
+            content = @Content(mediaType = "application/hal+json")),
         @ApiResponse(responseCode = "404", description = "No se encontraron productos con el color proporcionado",
             content = @Content(mediaType = "application/json",
             examples = @ExampleObject(value = """
@@ -191,17 +222,24 @@ public class ProductoController {
             );
             return ResponseEntity.status(404).body(error);
         }
-        return ResponseEntity.ok(productos);
+        List<EntityModel<ProductoResponseDTO>> resources = productos.stream()
+            .map(this::toModel)
+            .toList();
+
+        return ResponseEntity.ok(CollectionModel.of(
+            resources,
+            linkTo(methodOn(ProductoController.class).buscarPorColor(proColor)).withSelfRel(),
+            linkTo(methodOn(ProductoController.class).obtenerTodos()).withRel("productos")
+        ));
     }           
 
 
-    //Buscar productos por género
-    @GetMapping("/buscar/genero/{proGenero}")
+    // GET - Buscar productos por género
+    @GetMapping(value = "/buscar/genero/{proGenero}", produces = MediaTypes.HAL_JSON_VALUE)
     @Operation(summary = "Buscar productos por género", description = "Devuelve una lista de productos que coinciden con el género proporcionado")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Lista de productos obtenida exitosamente",
-            content = @Content(mediaType = "application/json",
-            array = @ArraySchema(schema = @Schema(implementation = ProductoResponseDTO.class)))),
+            content = @Content(mediaType = "application/hal+json")),
         @ApiResponse(responseCode = "404", description = "No se encontraron productos con el género proporcionado",
             content = @Content(mediaType = "application/json",
             examples = @ExampleObject(value = """
@@ -228,15 +266,30 @@ public class ProductoController {
             );
             return ResponseEntity.status(404).body(error);
         }
-        return ResponseEntity.ok(productos);
+        List<EntityModel<ProductoResponseDTO>> resources = productos.stream()
+            .map(this::toModel)
+            .toList();
+
+        return ResponseEntity.ok(CollectionModel.of(
+            resources,
+            linkTo(methodOn(ProductoController.class).buscarPorGenero(proGenero)).withSelfRel(),
+            linkTo(methodOn(ProductoController.class).obtenerTodos()).withRel("productos")
+        ));
     }   
+
+        private EntityModel<ProductoResponseDTO> toModel(ProductoResponseDTO producto) {
+        return EntityModel.of(
+            producto,
+            linkTo(methodOn(ProductoController.class).obtenerPorId(producto.getId())).withSelfRel()
+        );
+        }
     
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////////                 PUTs                                 /////////////////////////
+    ///////////////////////////                 PUT                               /////////////////////////
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-    //Actualizar stock de producto
+    // PUT - Actualizar stock de producto
     @PutMapping("/{id}/stock")
     @Operation(summary = "Actualizar stock de producto", description = "Permite actualizar el stock de un producto específico según su ID")
     @ApiResponses(value = {
@@ -274,7 +327,7 @@ public class ProductoController {
         }
     }       
 
-    //Actualizar precio de producto
+    // PUT -Actualizar precio de producto
     @PutMapping("/{id}/precio")
     @Operation(summary = "Actualizar precio de producto", description = "Permite actualizar el precio de un producto específico según su ID")
     @ApiResponses(value = {
@@ -314,10 +367,10 @@ public class ProductoController {
 
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////////                 POSTs                                /////////////////////////
+    ///////////////////////////                 POST                                 /////////////////////////
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    //Crear nuevo producto
+    // POST - Crear nuevo producto
     @PostMapping
     @Operation(summary = "Crear un nuevo producto", description = "Permite crear un nuevo producto")
     @ApiResponses(value = {
@@ -350,9 +403,11 @@ public class ProductoController {
     
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////////                 DELETEs                               //////////////////////
+    ///////////////////////////                 DELETE                               //////////////////////
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
     
+
+    //DELETE - Eliminar producto por ID
     @DeleteMapping("/{id}")
     @Operation(summary = "Eliminar producto", description = "Permite eliminar un producto específico según su ID")
     @ApiResponses(value = {

@@ -33,4 +33,6 @@ public class PedidoResponseDTO {
 
     @Schema(description = "ID del cliente que realizó el pedido", example = "1")
     private Long clienteId;
+
+    private java.util.List<PedidoDetalleResponseDTO> items;
 }

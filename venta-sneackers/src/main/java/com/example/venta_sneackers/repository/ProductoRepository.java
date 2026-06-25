@@ -11,6 +11,7 @@ import com.example.venta_sneackers.model.Producto;
 
 public interface ProductoRepository extends JpaRepository<Producto, Long> {
 
+
     List<Producto> findByProNombreContainingIgnoreCase(String nombre);
 
     List<Producto> findByProMarca(String marca);

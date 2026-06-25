@@ -19,7 +19,7 @@ public class ModeloService {
 
     private final ModeloRepository modeloRepository;
     
-    // ── MAPEO PRIVADO: Entidad → ResponseDTO ─────────
+    //MAPEO PRIVADO: Entidad A ResponseDTO 
     private ModeloResponseDTO mapToDTO(Modelo modelo) {
         return new ModeloResponseDTO(
                 modelo.getIdModelo(),
@@ -32,7 +32,7 @@ public class ModeloService {
 
     }
 
-    // 1.OBTENER TODOS
+    //OBTENER TODOS
     public List<ModeloResponseDTO> obtenerTodos() {
         return modeloRepository.findAll()
                 .stream()
@@ -40,7 +40,7 @@ public class ModeloService {
                 .collect(Collectors.toList());
     }
 
-    // 2.OBTENER POR ID
+    //OBTENER POR ID
     @SuppressWarnings("null")
     public Optional<ModeloResponseDTO> obtenerPorId(Long id) {
         return modeloRepository
@@ -48,7 +48,43 @@ public class ModeloService {
             .map(this::mapToDTO);
     }
 
-    // 3.GUARDAR
+    //OBTENER POR NOMBRE 
+    public List<ModeloResponseDTO> buscarPorNombre(String nombre) {
+        return modeloRepository.findByModNombreContainingIgnoreCase(nombre)
+                .stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
+    }
+
+    //BUSCAR POR TEMPORADA 
+    public List<ModeloResponseDTO> buscarPorTemporada(String temporada) {
+        return modeloRepository.findByModTemporada(temporada)
+                .stream()
+                .map(this::mapToDTO).collect(Collectors.toList());
+    }
+
+    //BUSCAR POR EDICION LIMITADA
+    public List<ModeloResponseDTO> buscarPorEdicionLimitada(Boolean edicionLimitada) {
+        return modeloRepository.findByModEdicionLimitada(edicionLimitada)
+                .stream()
+                .map(this::mapToDTO).collect(Collectors.toList());
+    }
+
+    //BUSCAR POR AÑO LANZAMIENTO
+    public List<ModeloResponseDTO> buscarPorAnioLanzamiento(Integer anio) {
+        return modeloRepository.findByModAnioLanzamiento(anio)
+                .stream()
+                .map(this::mapToDTO).collect(Collectors.toList());
+    }
+
+    //BUSCAR POR TEMPORADA ORDENADO
+    public List<ModeloResponseDTO> buscarPorTemporadaOrdenado(String temporada) {
+        return modeloRepository.findByTemporadaOrdenado(temporada)
+                .stream()
+                .map(this::mapToDTO).collect(Collectors.toList());
+    }
+
+    //GUARDAR UN NUEVO MODELO
     public ModeloResponseDTO guardar(ModeloRequestDTO dto) {
         Modelo modelo = new Modelo(
                 null,
@@ -61,7 +97,7 @@ public class ModeloService {
         return mapToDTO(modeloRepository.save(modelo));
     }
 
-    // 4.ACTUALIZAR
+    //ACTUALIZAR UN MODELO EXISTENTE
     @SuppressWarnings("null")
     public Optional<ModeloResponseDTO> actualizar(Long id, ModeloRequestDTO dto) {
         return modeloRepository.findById(id).map(existente -> {
@@ -75,45 +111,11 @@ public class ModeloService {
     }
 
     
-    // 5.ELIMINAR
+    //ELIMINAR UN MODELO POR ID
     @SuppressWarnings("null")
     public void eliminar(Long id) {
         modeloRepository.deleteById(id);
     }
 
-    // 6.BUSCAR POR NOMBRE
-    public List<ModeloResponseDTO> buscarPorNombre(String nombre) {
-        return modeloRepository.findByModNombreContainingIgnoreCase(nombre)
-                .stream()
-                .map(this::mapToDTO)
-                .collect(Collectors.toList());
-    }
-
-    // 7.BUSCAR POR TEMPORADA
-    public List<ModeloResponseDTO> buscarPorTemporada(String temporada) {
-        return modeloRepository.findByModTemporada(temporada)
-                .stream()
-                .map(this::mapToDTO).collect(Collectors.toList());
-    }
-
-    // 8.BUSCAR POR EDICION LIMITADA
-    public List<ModeloResponseDTO> buscarPorEdicionLimitada(Boolean edicionLimitada) {
-        return modeloRepository.findByModEdicionLimitada(edicionLimitada)
-                .stream()
-                .map(this::mapToDTO).collect(Collectors.toList());
-    }
-
-    // 9.BUSCAR POR AÑO LANZAMIENTO
-    public List<ModeloResponseDTO> buscarPorAnioLanzamiento(Integer anio) {
-        return modeloRepository.findByModAnioLanzamiento(anio)
-                .stream()
-                .map(this::mapToDTO).collect(Collectors.toList());
-    }
-
-    // 10.BUSCAR POR TEMPORADA ORDENADO
-    public List<ModeloResponseDTO> buscarPorTemporadaOrdenado(String temporada) {
-        return modeloRepository.findByTemporadaOrdenado(temporada)
-                .stream()
-                .map(this::mapToDTO).collect(Collectors.toList());
-    }
+    
 }

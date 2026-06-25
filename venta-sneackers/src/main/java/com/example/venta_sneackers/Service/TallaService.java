@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 public class TallaService {
     private final TallaRepository repository;
 
-    public List<TallaResponseDTO> obtenerTodos() {
+    public List<TallaResponseDTO> obtenerTodas() {
         return repository.findAll().stream().map(talla ->
             new TallaResponseDTO(
                 talla.getId(),
@@ -46,7 +46,7 @@ public class TallaService {
         );
     }
 
-    public TallaResponseDTO actualizar(Long id, TallaResponseDTO dto) {
+    public TallaResponseDTO actualizar(Long id, TallaRequestDTO dto) {
         @SuppressWarnings("null")
         Talla talla = repository.findById(id).orElseThrow();
         talla.setTallNombre(dto.getTallNombre());

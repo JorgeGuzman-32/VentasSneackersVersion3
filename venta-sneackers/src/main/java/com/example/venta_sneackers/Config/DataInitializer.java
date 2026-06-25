@@ -1,11 +1,13 @@
 package com.example.venta_sneackers.Config;
 
 import com.example.venta_sneackers.model.Cliente;
+import com.example.venta_sneackers.model.DetallePedido;
 import com.example.venta_sneackers.model.Modelo;
 import com.example.venta_sneackers.model.Pedido;
 import com.example.venta_sneackers.model.Producto;
 import com.example.venta_sneackers.model.Talla;
 import com.example.venta_sneackers.repository.ClienteRepository;
+import com.example.venta_sneackers.repository.DetallePedidoRepository;
 import com.example.venta_sneackers.repository.ModeloRepository;
 import com.example.venta_sneackers.repository.PedidoRepository;
 import com.example.venta_sneackers.repository.ProductoRepository;
@@ -28,6 +30,7 @@ public class DataInitializer implements CommandLineRunner {
     private final ProductoRepository productoRepository;
     private final ClienteRepository clienteRepository;
     private final PedidoRepository pedidoRepository;
+        private final DetallePedidoRepository detallePedidoRepository;
 
     @Override
     @Transactional
@@ -53,15 +56,72 @@ public class DataInitializer implements CommandLineRunner {
             seedPedidos();
         }
 
+                if (detallePedidoRepository.count() == 0 && pedidoRepository.count() > 0 && productoRepository.count() > 0) {
+                        seedDetallesDesdeEntidadesRelacionadas();
+                }
+
         log.info(
-                ">>> DataInitializer: {} modelos, {} tallas, {} productos, {} clientes y {} pedidos.",
+                                ">>> DataInitializer: {} modelos, {} tallas, {} productos, {} clientes, {} pedidos y {} detalles.",
                 modeloRepository.count(),
                 tallaRepository.count(),
                 productoRepository.count(),
                 clienteRepository.count(),
-                pedidoRepository.count()
+                                pedidoRepository.count(),
+                                detallePedidoRepository.count()
         );
     }
+
+        private void seedDetallesDesdeEntidadesRelacionadas() {
+                java.util.List<Pedido> pedidos = pedidoRepository.findAll().stream()
+                                .sorted(java.util.Comparator.comparing(Pedido::getIdPedido))
+                                .toList();
+
+                java.util.List<Producto> productos = productoRepository.findAll().stream()
+                                .sorted(java.util.Comparator.comparing(Producto::getIdProducto))
+                                .toList();
+
+                if (pedidos.isEmpty() || productos.isEmpty()) {
+                        return;
+                }
+
+                for (int i = 0; i < pedidos.size(); i++) {
+                        Pedido pedido = pedidos.get(i);
+
+                        if (pedido.getDetalles() != null && !pedido.getDetalles().isEmpty()) {
+                                continue;
+                        }
+
+                        Producto productoA = productos.get(i % productos.size());
+                        DetallePedido detalleA = new DetallePedido();
+                        detalleA.setProducto(productoA);
+                        detalleA.setCantidad(1);
+                        detalleA.setPrecioUnitario(productoA.getProPrecio());
+                        detalleA.setSubtotal(productoA.getProPrecio());
+                        pedido.addDetalle(detalleA);
+
+                        if (i % 2 == 0 && productos.size() > 1) {
+                                Producto productoB = productos.get((i + 1) % productos.size());
+                                DetallePedido detalleB = new DetallePedido();
+                                detalleB.setProducto(productoB);
+                                detalleB.setCantidad(1);
+                                detalleB.setPrecioUnitario(productoB.getProPrecio());
+                                detalleB.setSubtotal(productoB.getProPrecio());
+                                pedido.addDetalle(detalleB);
+                        }
+
+                        BigDecimal subtotal = pedido.getDetalles().stream()
+                                        .map(DetallePedido::getSubtotal)
+                                        .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+                        BigDecimal descuento = pedido.getPedDescuento() != null ? pedido.getPedDescuento() : BigDecimal.ZERO;
+                        pedido.setPedSubtotal(subtotal);
+                        pedido.setPedDescuento(descuento);
+                        pedido.setPedTotal(subtotal.subtract(descuento));
+                }
+
+                pedidoRepository.saveAll(pedidos);
+                log.info(">>> DataInitializer: detalle_pedidos creados desde pedidos/productos existentes.");
+        }
 
     private void seedModelos() {
         Modelo airMax = modeloRepository.save(new Modelo(null, "Zapatilla deportiva clasica", "Air Max", "verano", 2020, false));
@@ -213,12 +273,115 @@ public class DataInitializer implements CommandLineRunner {
         Cliente cliente5 = clientes.get(4);
         Cliente cliente6 = clientes.get(5);
 
-        pedidoRepository.save(new Pedido(null, "2024-01-15", new BigDecimal("89.00"), new BigDecimal("5.00"), new BigDecimal("84.00"), true, cliente1));
-        pedidoRepository.save(new Pedido(null, "2024-02-20", new BigDecimal("150.00"), new BigDecimal("10.00"), new BigDecimal("140.00"), false, cliente2));
-        pedidoRepository.save(new Pedido(null, "2024-03-10", new BigDecimal("120.00"), new BigDecimal("0.00"), new BigDecimal("120.00"), true, cliente3));
-        pedidoRepository.save(new Pedido(null, "2024-04-05", new BigDecimal("200.00"), new BigDecimal("15.00"), new BigDecimal("185.00"), true, cliente4));
-        pedidoRepository.save(new Pedido(null, "2024-05-12", new BigDecimal("95.00"), new BigDecimal("8.00"), new BigDecimal("87.00"), false, cliente5));
-        pedidoRepository.save(new Pedido(null, "2024-06-18", new BigDecimal("175.00"), new BigDecimal("12.00"), new BigDecimal("163.00"), true, cliente6));
+        java.util.List<Producto> productos = productoRepository.findAll();
+        Producto producto1 = productos.stream().filter(p -> "Nike Air Max 90".equals(p.getProNombre())).findFirst().orElseThrow();
+        Producto producto2 = productos.stream().filter(p -> "Nike Air Max 90 Negro".equals(p.getProNombre())).findFirst().orElseThrow();
+        Producto producto3 = productos.stream().filter(p -> "Adidas Superstar Blanco".equals(p.getProNombre())).findFirst().orElseThrow();
+        Producto producto4 = productos.stream().filter(p -> "Adidas Superstar Negro".equals(p.getProNombre())).findFirst().orElseThrow();
+        Producto producto5 = productos.stream().filter(p -> "Converse Chuck Taylor Rojo".equals(p.getProNombre())).findFirst().orElseThrow();
+        Producto producto6 = productos.stream().filter(p -> "Adidas Ultra Boost 22".equals(p.getProNombre())).findFirst().orElseThrow();
+
+        Pedido pedido1 = new Pedido();
+        pedido1.setPedFechaCompra("2024-01-15");
+        pedido1.setPedPagado(true);
+        pedido1.setCliente(cliente1);
+        DetallePedido detalle1 = new DetallePedido();
+        detalle1.setProducto(producto1);
+        detalle1.setCantidad(1);
+        detalle1.setPrecioUnitario(producto1.getProPrecio());
+        detalle1.setSubtotal(producto1.getProPrecio());
+        pedido1.addDetalle(detalle1);
+        pedido1.setPedSubtotal(detalle1.getSubtotal());
+        pedido1.setPedDescuento(new BigDecimal("5.00"));
+        pedido1.setPedTotal(detalle1.getSubtotal().subtract(new BigDecimal("5.00")));
+        pedidoRepository.save(pedido1);
+
+        Pedido pedido2 = new Pedido();
+        pedido2.setPedFechaCompra("2024-02-20");
+        pedido2.setPedPagado(false);
+        pedido2.setCliente(cliente2);
+        DetallePedido detalle2a = new DetallePedido();
+        detalle2a.setProducto(producto2);
+        detalle2a.setCantidad(1);
+        detalle2a.setPrecioUnitario(producto2.getProPrecio());
+        detalle2a.setSubtotal(producto2.getProPrecio());
+        pedido2.addDetalle(detalle2a);
+        DetallePedido detalle2b = new DetallePedido();
+        detalle2b.setProducto(producto3);
+        detalle2b.setCantidad(1);
+        detalle2b.setPrecioUnitario(producto3.getProPrecio());
+        detalle2b.setSubtotal(producto3.getProPrecio());
+        pedido2.addDetalle(detalle2b);
+        pedido2.setPedSubtotal(detalle2a.getSubtotal().add(detalle2b.getSubtotal()));
+        pedido2.setPedDescuento(new BigDecimal("10.00"));
+        pedido2.setPedTotal(pedido2.getPedSubtotal().subtract(new BigDecimal("10.00")));
+        pedidoRepository.save(pedido2);
+
+        Pedido pedido3 = new Pedido();
+        pedido3.setPedFechaCompra("2024-03-10");
+        pedido3.setPedPagado(true);
+        pedido3.setCliente(cliente3);
+        DetallePedido detalle3 = new DetallePedido();
+        detalle3.setProducto(producto4);
+        detalle3.setCantidad(1);
+        detalle3.setPrecioUnitario(producto4.getProPrecio());
+        detalle3.setSubtotal(producto4.getProPrecio());
+        pedido3.addDetalle(detalle3);
+        pedido3.setPedSubtotal(detalle3.getSubtotal());
+        pedido3.setPedDescuento(BigDecimal.ZERO);
+        pedido3.setPedTotal(detalle3.getSubtotal());
+        pedidoRepository.save(pedido3);
+
+        Pedido pedido4 = new Pedido();
+        pedido4.setPedFechaCompra("2024-04-05");
+        pedido4.setPedPagado(true);
+        pedido4.setCliente(cliente4);
+        DetallePedido detalle4 = new DetallePedido();
+        detalle4.setProducto(producto5);
+        detalle4.setCantidad(2);
+        detalle4.setPrecioUnitario(producto5.getProPrecio());
+        detalle4.setSubtotal(producto5.getProPrecio().multiply(new BigDecimal("2")));
+        pedido4.addDetalle(detalle4);
+        pedido4.setPedSubtotal(detalle4.getSubtotal());
+        pedido4.setPedDescuento(new BigDecimal("15.00"));
+        pedido4.setPedTotal(detalle4.getSubtotal().subtract(new BigDecimal("15.00")));
+        pedidoRepository.save(pedido4);
+
+        Pedido pedido5 = new Pedido();
+        pedido5.setPedFechaCompra("2024-05-12");
+        pedido5.setPedPagado(false);
+        pedido5.setCliente(cliente5);
+        DetallePedido detalle5 = new DetallePedido();
+        detalle5.setProducto(producto6);
+        detalle5.setCantidad(1);
+        detalle5.setPrecioUnitario(producto6.getProPrecio());
+        detalle5.setSubtotal(producto6.getProPrecio());
+        pedido5.addDetalle(detalle5);
+        pedido5.setPedSubtotal(detalle5.getSubtotal());
+        pedido5.setPedDescuento(new BigDecimal("8.00"));
+        pedido5.setPedTotal(detalle5.getSubtotal().subtract(new BigDecimal("8.00")));
+        pedidoRepository.save(pedido5);
+
+        Pedido pedido6 = new Pedido();
+        pedido6.setPedFechaCompra("2024-06-18");
+        pedido6.setPedPagado(true);
+        pedido6.setCliente(cliente6);
+        DetallePedido detalle6a = new DetallePedido();
+        detalle6a.setProducto(producto1);
+        detalle6a.setCantidad(1);
+        detalle6a.setPrecioUnitario(producto1.getProPrecio());
+        detalle6a.setSubtotal(producto1.getProPrecio());
+        pedido6.addDetalle(detalle6a);
+        DetallePedido detalle6b = new DetallePedido();
+        detalle6b.setProducto(producto5);
+        detalle6b.setCantidad(1);
+        detalle6b.setPrecioUnitario(producto5.getProPrecio());
+        detalle6b.setSubtotal(producto5.getProPrecio());
+        pedido6.addDetalle(detalle6b);
+        pedido6.setPedSubtotal(detalle6a.getSubtotal().add(detalle6b.getSubtotal()));
+        pedido6.setPedDescuento(new BigDecimal("12.00"));
+        pedido6.setPedTotal(pedido6.getPedSubtotal().subtract(new BigDecimal("12.00")));
+        pedidoRepository.save(pedido6);
 
         log.info(">>> DataInitializer: pedidos base cargados.");
     }

@@ -1,8 +1,9 @@
 package com.example.venta_sneackers.controller;
 
+import static org.hamcrest.Matchers.hasItem;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import com.example.venta_sneackers.Service.ClienteService;
 import com.example.venta_sneackers.dto.ClienteRequestDTO;
@@ -16,6 +17,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.Collections;
 import java.util.List;
 
 @WebMvcTest(ClienteController.class)
@@ -45,8 +47,46 @@ public class ClienteControllerTest {
 
         mockMvc.perform(get("/api/V1/clientes"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value(1))
-                .andExpect(jsonPath("$[0].cliNombre").value("Juan Perez"));
+                .andExpect(content().contentTypeCompatibleWith("application/hal+json"))
+                .andExpect(jsonPath("$._links.self.href").exists())
+                .andExpect(jsonPath("$._links.buscarPorIdCliente.href").exists())
+                .andExpect(jsonPath("$._links.buscarPorNombre.href").exists())
+                .andExpect(jsonPath("$._links.buscarPorEstado.href").exists())
+                .andExpect(jsonPath("$..id").value(hasItem(1)))
+                .andExpect(jsonPath("$..cliNombre").value(hasItem("Juan Perez")));
+    }
+
+    @Test
+    public void testObtenerTodosSinResultados() throws Exception {
+        when(clienteService.obtenerTodos()).thenReturn(Collections.emptyList());
+
+        mockMvc.perform(get("/api/V1/clientes"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error").value("No encontrado"))
+                .andExpect(jsonPath("$.descripcion").exists());
+    }
+
+    @Test
+    public void testObtenerPorIdCliente() throws Exception {
+        when(clienteService.obtenerPorIdCliente(1L)).thenReturn(List.of(clienteResponse));
+
+        mockMvc.perform(get("/api/V1/clientes/idCliente/1"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith("application/hal+json"))
+                .andExpect(jsonPath("$._links.self.href").exists())
+                .andExpect(jsonPath("$..id").value(hasItem(1)))
+                .andExpect(jsonPath("$..cliNombre").value(hasItem("Juan Perez")));
+    }
+
+    @Test
+    public void testObtenerPorNombre() throws Exception {
+        when(clienteService.buscarPorNombre("Juan Perez")).thenReturn(List.of(clienteResponse));
+
+        mockMvc.perform(get("/api/V1/clientes/cliNombre/Juan Perez"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith("application/hal+json"))
+                .andExpect(jsonPath("$._links.self.href").exists())
+                .andExpect(jsonPath("$..cliNombre").value(hasItem("Juan Perez")));
     }
 
     @Test

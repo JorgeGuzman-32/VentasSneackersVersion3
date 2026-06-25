@@ -9,7 +9,7 @@ public class VentaSneackersApplication {
 
 	public static void main(String[] args) {
 		SpringApplication app = new SpringApplication(VentaSneackersApplication.class);
-		app.setDefaultProperties(Collections.singletonMap("server.port", "9090"));
+		app.setDefaultProperties(Collections.singletonMap("server.port", "8181"));
 		app.run(args);
 	}
 

@@ -38,6 +38,7 @@ public class ProductoService {
                 producto.getProEdad(),
                 producto.getTalla().getId(),
                 producto.getModelo().getIdModelo()
+
         );
     }
 
@@ -48,7 +49,7 @@ public class ProductoService {
     }
 
     @SuppressWarnings("null")
-    public Optional<ProductoResponseDTO> obtenerPorId(Long id) {
+    public Optional<ProductoResponseDTO> obtenerProdPorId(Long id) {
         return repository.findById(id)
                 .map(this::toResponseDTO);
     }

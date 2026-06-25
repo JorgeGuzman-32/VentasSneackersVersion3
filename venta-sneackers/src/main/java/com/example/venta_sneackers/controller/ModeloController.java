@@ -3,8 +3,10 @@ package com.example.venta_sneackers.controller;
 import com.example.venta_sneackers.Service.ModeloService;
 import com.example.venta_sneackers.dto.ModeloRequestDTO;
 import com.example.venta_sneackers.dto.ModeloResponseDTO;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.MediaTypes;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -26,10 +28,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+
 @RestController
 @Tag(name = "Modelo", description = "Endpoints relacionados con los modelos de productos")
 @RequestMapping("/api/V1/modelos")
 @RequiredArgsConstructor
+@SuppressWarnings("null")
 public class ModeloController {
 
     private final ModeloService modeloService;
@@ -40,14 +46,36 @@ public class ModeloController {
     
 
     /// Obtener todos los modelos
-    @GetMapping
+    @GetMapping(produces = MediaTypes.HAL_JSON_VALUE)
     @Operation(summary = "Obtener todos los modelos", description = "Devuelve una lista de todos los modelos disponibles")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Modelos obtenidos exitosamente",
-            content = @Content(mediaType = "application/json",
-                array = @ArraySchema(schema = @Schema(implementation = ModeloResponseDTO.class)))),
+            content = @Content(mediaType = "application/hal+json",
+                schema = @Schema(implementation = ModeloResponseDTO.class),
+                examples = @ExampleObject(value = """
+                    [
+                        {
+                            "id": 1,
+                            "modNombre": "Air Max",
+                            "modTemporada": "Verano",
+                            "modAnioLanzamiento": 2024,
+                            "modEdicionLimitada": false,
+                            "modDescripcion": "Zapatilla deportiva de alto rendimiento"
+                        },
+                        {
+                            "id": 2,
+                            "modNombre": "Classic Leather",
+                            "modTemporada": "Invierno",
+                            "modAnioLanzamiento": 2023,
+                            "modEdicionLimitada": true,
+                            "modDescripcion": "Zapatilla clásica con estilo retro"
+                        }
+                    ]
+                """)
+            )),
         @ApiResponse(responseCode = "404", description = "No se encontraron modelos",
             content = @Content(mediaType = "application/json",
+            schema = @Schema(implementation = Map.class),
             examples = @ExampleObject(value = """
                 {
                     "error": "No encontrado",
@@ -56,6 +84,7 @@ public class ModeloController {
             """))),
         @ApiResponse(responseCode = "500", description = "Error interno del servidor",
             content = @Content(mediaType = "application/json",
+            schema = @Schema(implementation = Map.class),
             examples = @ExampleObject(value = """
                 {
                     "error": "Error interno",
@@ -72,20 +101,43 @@ public class ModeloController {
             );
             return ResponseEntity.status(404).body(error);
         }
-        return ResponseEntity.ok(modelos);
+
+        List<EntityModel<ModeloResponseDTO>> resources = modelos.stream()
+                .map(this::toModel)
+                .toList();
+
+        return ResponseEntity.ok(CollectionModel.of(
+                resources,
+                linkTo(methodOn(ModeloController.class).obtenerTodos()).withSelfRel(),
+                linkTo(methodOn(ModeloController.class).obtenerPorId(null)).withRel("buscarPorId"),
+                linkTo(methodOn(ModeloController.class).buscarPorNombre(null)).withRel("buscarPorNombre"),
+                linkTo(methodOn(ModeloController.class).buscarPorTemporada(null)).withRel("buscarPorTemporada")
+        ));
     }
 
 
 
     /// Obtener un modelo por ID
-    @GetMapping("/{id}")
+    @GetMapping(value = "/{id}", produces = MediaTypes.HAL_JSON_VALUE)
     @Operation(summary = "Obtener modelo por ID", description = "Devuelve un modelo específico según su ID")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Modelo obtenido exitosamente",
-            content = @Content(mediaType = "application/json",
-                schema = @Schema(implementation = ModeloResponseDTO.class))),
+            content = @Content(mediaType = "application/hal+json",
+                schema = @Schema(implementation = ModeloResponseDTO.class),
+                examples = @ExampleObject(value = """
+                    {
+                        "id": 1,
+                        "modNombre": "Air Max",
+                        "modTemporada": "Verano",
+                        "modAnioLanzamiento": 2024,
+                        "modEdicionLimitada": false,
+                        "modDescripcion": "Zapatilla deportiva de alto rendimiento"
+                    }
+                """)
+            )),
         @ApiResponse(responseCode = "404", description = "Modelo no encontrado",
             content = @Content(mediaType = "application/json",
+            schema = @Schema(implementation = Map.class),
             examples = @ExampleObject(value = """
                 {
                     "error": "No encontrado",
@@ -94,6 +146,7 @@ public class ModeloController {
             """))),
         @ApiResponse(responseCode = "500", description = "Error interno del servidor",
             content = @Content(mediaType = "application/json",
+            schema = @Schema(implementation = Map.class),
             examples = @ExampleObject(value = """
                 {
                     "error": "Error interno",
@@ -104,7 +157,7 @@ public class ModeloController {
     public ResponseEntity<?> obtenerPorId(@PathVariable Long id) {
         Optional<ModeloResponseDTO> modeloOpt = modeloService.obtenerPorId(id);
         if (modeloOpt.isPresent()) {
-            return ResponseEntity.ok(modeloOpt.get());
+            return ResponseEntity.ok(toModel(modeloOpt.get()));
         } else {
             Map<String, String> error = Map.of(
                 "error", "No encontrado",
@@ -116,14 +169,25 @@ public class ModeloController {
 
 
     /// Buscar modelos por nombre
-    @GetMapping("/buscar/nombre/{modNombre}")
+    @GetMapping(value = "/buscar/nombre/{modNombre}", produces = MediaTypes.HAL_JSON_VALUE)
     @Operation(summary = "Buscar modelo por nombre", description = "Devuelve los modelos que coinciden con el nombre proporcionado")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Modelos encontrados exitosamente",
-            content = @Content(mediaType = "application/json",
-                array = @ArraySchema(schema = @Schema(implementation = ModeloResponseDTO.class)))),
+            content = @Content(mediaType = "application/hal+json",
+            schema = @Schema(implementation = ModeloResponseDTO.class),
+            examples = @ExampleObject(value = """
+                    {
+                        "id": 1,
+                        "modNombre": "Air Max",
+                        "modTemporada": "Verano",
+                        "modAnioLanzamiento": 2024,
+                        "modEdicionLimitada": false,
+                        "modDescripcion": "Zapatilla deportiva de alto rendimiento"
+                    }
+            """))),
         @ApiResponse(responseCode = "404", description = "No se encontraron modelos para el nombre especificado",
             content = @Content(mediaType = "application/json",
+            schema = @Schema(implementation = Map.class),
             examples = @ExampleObject(value = """
                 {
                     "error": "No encontrado",
@@ -132,6 +196,7 @@ public class ModeloController {
             """))),
         @ApiResponse(responseCode = "500", description = "Error interno del servidor",
             content = @Content(mediaType = "application/json",
+            schema = @Schema(implementation = Map.class),
             examples = @ExampleObject(value = """
                 {
                     "error": "Error interno",
@@ -148,18 +213,36 @@ public class ModeloController {
             );
             return ResponseEntity.status(404).body(error);
         }
-        return ResponseEntity.ok(modelos);
+        List<EntityModel<ModeloResponseDTO>> resources = modelos.stream()
+            .map(this::toModel)
+            .toList();
+        return ResponseEntity.ok(CollectionModel.of(
+            resources,
+            linkTo(methodOn(ModeloController.class).buscarPorNombre(modNombre)).withSelfRel(),
+            linkTo(methodOn(ModeloController.class).obtenerTodos()).withRel("modelos")
+        ));
     }
     
     /// Buscar modelos por temporada
-    @GetMapping("/buscar/temporada/{modTemporada}")
+    @GetMapping(value = "/buscar/temporada/{modTemporada}", produces = MediaTypes.HAL_JSON_VALUE)
     @Operation(summary = "Buscar modelo por temporada", description = "Devuelve los modelos que pertenecen a la temporada especificada")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Modelos encontrados exitosamente",
-            content = @Content(mediaType = "application/json",
-                array = @ArraySchema(schema = @Schema(implementation = ModeloResponseDTO.class)))),
+            content = @Content(mediaType = "application/hal+json",
+            schema = @Schema(implementation = ModeloResponseDTO.class),
+            examples = @ExampleObject(value = """
+                    {
+                        "id": 1,
+                        "modNombre": "Air Max",
+                        "modTemporada": "Verano",
+                        "modAnioLanzamiento": 2024,
+                        "modEdicionLimitada": false,
+                        "modDescripcion": "Zapatilla deportiva de alto rendimiento"
+                    }
+            """))),
         @ApiResponse(responseCode = "404", description = "No se encontraron modelos para la temporada especificada",
             content = @Content(mediaType = "application/json",
+            schema = @Schema(implementation = Map.class),
             examples = @ExampleObject(value = """
                 {
                     "error": "No encontrado",
@@ -184,8 +267,22 @@ public class ModeloController {
             );
             return ResponseEntity.status(404).body(error);
         }
-        return ResponseEntity.ok(modelos);
+        List<EntityModel<ModeloResponseDTO>> resources = modelos.stream()
+            .map(this::toModel)
+            .toList();
+        return ResponseEntity.ok(CollectionModel.of(
+            resources,
+            linkTo(methodOn(ModeloController.class).buscarPorTemporada(modTemporada)).withSelfRel(),
+            linkTo(methodOn(ModeloController.class).obtenerTodos()).withRel("modelos")
+        ));
     }
+
+        private EntityModel<ModeloResponseDTO> toModel(ModeloResponseDTO modelo) {
+        return EntityModel.of(
+            modelo,
+            linkTo(methodOn(ModeloController.class).obtenerPorId(modelo.getId())).withSelfRel()
+        );
+        }
 
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////    
@@ -203,6 +300,7 @@ public class ModeloController {
                 "{\"modNombre\": \"Air Max\",\"modTemporada\": \"Verano\", \"modAnioLanzamiento\": 2024, \"modEdicionLimitada\": false, \"modDescripcion\": \"Zapatilla deportiva de alto rendimiento\"}"))),
         @ApiResponse(responseCode = "400", description = "Solicitud inválida",
             content = @Content(mediaType = "application/json",
+            schema = @Schema(implementation = Map.class),
             examples = @ExampleObject(value = """
                 {
                     "error": "Solicitud inválida",
@@ -211,6 +309,7 @@ public class ModeloController {
             """))),
         @ApiResponse(responseCode = "500", description = "Error interno del servidor",
             content = @Content(mediaType = "application/json",
+            schema = @Schema(implementation = Map.class),
             examples = @ExampleObject(value = """
                 {
                     "error": "Error interno",
@@ -244,6 +343,7 @@ public class ModeloController {
                 schema = @Schema(implementation = ModeloResponseDTO.class))),
         @ApiResponse(responseCode = "400", description = "Solicitud inválida",
             content = @Content(mediaType = "application/json",
+            schema = @Schema(implementation = Map.class),
             examples = @ExampleObject(value = """
                 {
                     "error": "Solicitud inválida",
@@ -252,6 +352,7 @@ public class ModeloController {
             """))),
         @ApiResponse(responseCode = "404", description = "Modelo no encontrado",
             content = @Content(mediaType = "application/json",
+            schema = @Schema(implementation = Map.class),
             examples = @ExampleObject(value = """
                 {
                     "error": "No encontrado",
@@ -296,9 +397,18 @@ public class ModeloController {
     @DeleteMapping("/{id}")
     @Operation(summary = "Eliminar modelo por ID", description = "Permite eliminar un modelo específico según su ID")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "204", description = "Modelo eliminado exitosamente"),
+        @ApiResponse(responseCode = "204", description = "Modelo eliminado exitosamente",
+            content = @Content(mediaType = "application/json",
+            schema = @Schema(implementation = Map.class),
+            examples = @ExampleObject(value = """
+                {
+                    "mensaje": "Modelo eliminado exitosamente."
+                }
+            """))
+        ),
         @ApiResponse(responseCode = "404", description = "Modelo no encontrado",
             content = @Content(mediaType = "application/json",
+            schema = @Schema(implementation = Map.class),
             examples = @ExampleObject(value = """
                 {
                     "error": "No encontrado",
@@ -307,6 +417,7 @@ public class ModeloController {
             """))),
         @ApiResponse(responseCode = "500", description = "Error interno del servidor",
             content = @Content(mediaType = "application/json",
+            schema = @Schema(implementation = Map.class),
             examples = @ExampleObject(value = """
                 {
                     "error": "Error interno",
