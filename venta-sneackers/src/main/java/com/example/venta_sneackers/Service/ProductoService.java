@@ -2,8 +2,12 @@ package com.example.venta_sneackers.Service;
 
 import com.example.venta_sneackers.dto.ProductoRequestDTO;
 import com.example.venta_sneackers.dto.ProductoResponseDTO;
+import com.example.venta_sneackers.model.Modelo;
 import com.example.venta_sneackers.model.Producto;
+import com.example.venta_sneackers.model.Talla;
+import com.example.venta_sneackers.repository.ModeloRepository;
 import com.example.venta_sneackers.repository.ProductoRepository;
+import com.example.venta_sneackers.repository.TallaRepository;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -17,6 +21,8 @@ import org.springframework.stereotype.Service;
 public class ProductoService {
 
     private final ProductoRepository repository;
+    private final TallaRepository tallaRepository;
+    private final ModeloRepository modeloRepository;
 
     private ProductoResponseDTO toResponseDTO(Producto producto) {
         return new ProductoResponseDTO(
@@ -90,9 +96,15 @@ public class ProductoService {
             return true;
         }
         return false;
-    }   
+    }
 
     public ProductoResponseDTO crearProducto(ProductoRequestDTO dto) {
+        Talla talla = tallaRepository.findById(dto.getTallaId())
+                .orElseThrow(() -> new RuntimeException("Talla no encontrada con id: " + dto.getTallaId()));
+
+        Modelo modelo = modeloRepository.findById(dto.getModeloId())
+                .orElseThrow(() -> new RuntimeException("Modelo no encontrado con id: " + dto.getModeloId()));
+
         Producto producto = new Producto();
         producto.setProNombre(dto.getProNombre());
         producto.setProDescripcion(dto.getProDescripcion());
@@ -103,19 +115,17 @@ public class ProductoService {
         producto.setProColor(dto.getProColor());
         producto.setProGenero(dto.getProGenero());
         producto.setProEdad(dto.getProEdad());
-        // Aquí deberías asignar la talla y el modelo basándote en los IDs proporcionados en el DTO
-        // Esto podría implicar buscar la talla y el modelo en sus respectivos repositorios
+        producto.setTalla(talla);
+        producto.setModelo(modelo);
 
-        Producto saved = repository.save(producto);
-        return toResponseDTO(saved);
-    }           
+        return toResponseDTO(repository.save(producto));
+    }
 
-    public  boolean eliminarProducto(Long id) {
+    public boolean eliminarProducto(Long id) {
         if (repository.existsById(id)) {
             repository.deleteById(id);
             return true;
         }
         return false;
-    }   
-    
+    }
 }
