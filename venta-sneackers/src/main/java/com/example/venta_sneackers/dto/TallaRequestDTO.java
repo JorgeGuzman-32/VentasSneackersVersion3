@@ -15,10 +15,4 @@ public class TallaRequestDTO {
 
     @NotBlank(message = "La unidad es obligatoria")
     private String unidad;
-
-    
-
-    public TallaRequestDTO orElse(Object object) {
-        throw new UnsupportedOperationException("Unimplemented method 'orElse'");
-    }
 }
