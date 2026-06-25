@@ -24,6 +24,7 @@ public class TallaService {
             )).collect(Collectors.toList());
     }
 
+    @SuppressWarnings("null")
     public Optional<TallaResponseDTO> obtenerPorId(Long id) {
         return repository.findById(id).map(talla ->
             new TallaResponseDTO(
@@ -46,6 +47,7 @@ public class TallaService {
     }
 
     public TallaResponseDTO actualizar(Long id, TallaResponseDTO dto) {
+        @SuppressWarnings("null")
         Talla talla = repository.findById(id).orElseThrow();
         talla.setTallNombre(dto.getTallNombre());
         talla.setUnidad(dto.getUnidad());
@@ -59,6 +61,7 @@ public class TallaService {
     }
     
 
+    @SuppressWarnings("null")
     public void eliminar(Long id) {
         repository.deleteById(id);
     }

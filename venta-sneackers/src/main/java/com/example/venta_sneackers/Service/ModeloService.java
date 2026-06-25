@@ -41,6 +41,7 @@ public class ModeloService {
     }
 
     // 2.OBTENER POR ID
+    @SuppressWarnings("null")
     public Optional<ModeloResponseDTO> obtenerPorId(Long id) {
         return modeloRepository
             .findById(id)
@@ -61,6 +62,7 @@ public class ModeloService {
     }
 
     // 4.ACTUALIZAR
+    @SuppressWarnings("null")
     public Optional<ModeloResponseDTO> actualizar(Long id, ModeloRequestDTO dto) {
         return modeloRepository.findById(id).map(existente -> {
             existente.setModDescripcion(dto.getModDescripcion());
@@ -74,6 +76,7 @@ public class ModeloService {
 
     
     // 5.ELIMINAR
+    @SuppressWarnings("null")
     public void eliminar(Long id) {
         modeloRepository.deleteById(id);
     }

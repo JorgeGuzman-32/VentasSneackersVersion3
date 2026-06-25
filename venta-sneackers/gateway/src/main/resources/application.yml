@@ -1,0 +1,16 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: gateway
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true # Permite ruteo automático basado en los nombres de tus microservicios
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/

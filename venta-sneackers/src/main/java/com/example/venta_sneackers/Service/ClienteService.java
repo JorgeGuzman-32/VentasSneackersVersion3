@@ -6,9 +6,10 @@ import com.example.venta_sneackers.model.Cliente;
 import com.example.venta_sneackers.repository.ClienteRepository;
 import lombok.RequiredArgsConstructor;
 
-
+import org.springframework.hateoas.EntityModel;
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -39,6 +40,7 @@ public class ClienteService {
             )).collect(Collectors.toList());
     }
 
+    @SuppressWarnings("null")
     public Optional<ClienteResponseDTO> obtenerPorId(Long id) {
         return repository.findById(id).map(cliente ->
             new ClienteResponseDTO(
@@ -65,6 +67,7 @@ public class ClienteService {
     }
 
     public ClienteResponseDTO actualizar(Long id, ClienteRequestDTO dto) {
+        @SuppressWarnings("null")
         Cliente cliente = repository.findById(id).orElseThrow();
         cliente.setCliNombre(dto.getCliNombre());
         cliente.setCliDireccion(dto.getCliDireccion());
@@ -79,6 +82,7 @@ public class ClienteService {
         );
     }
 
+    @SuppressWarnings("null")
     public void eliminar(Long id) {
         repository.deleteById(id);
     }
@@ -117,15 +121,18 @@ public class ClienteService {
     return repository.findAll();
 }
 
+@SuppressWarnings("null")
 public Cliente getClienteById(Long id) {
     return repository.findById(id).orElseThrow();
 }
 
+@SuppressWarnings("null")
 public Cliente createCliente(Cliente cliente) {
     return repository.save(cliente);
 }
 
 public Cliente updateCliente(Long id, Cliente cliente) {
+    @SuppressWarnings("null")
     Cliente existing = repository.findById(id).orElseThrow();
     existing.setCliNombre(cliente.getCliNombre());
     existing.setCliDireccion(cliente.getCliDireccion());
@@ -133,7 +140,13 @@ public Cliente updateCliente(Long id, Cliente cliente) {
     return repository.save(existing);
 }
 
+@SuppressWarnings("null")
 public void deleteCliente(Long id) {
     repository.deleteById(id);
+}
+
+public Collection<EntityModel<Cliente>> getobtenerTodos() {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'getobtenerTodos'");
 }
 }
