@@ -6,13 +6,15 @@ import com.example.venta_sneackers.controller.ClienteControllerV2;
 import com.example.venta_sneackers.model.Cliente;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.server.RepresentationModelAssembler;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
 public class ClienteModelAssemblers implements RepresentationModelAssembler<Cliente, EntityModel<Cliente>> {
 
+    @SuppressWarnings("null")
     @Override
-    public EntityModel<Cliente> toModel(Cliente cliente) {
+    public @NonNull EntityModel<Cliente> toModel(Cliente cliente) {
         return EntityModel.of(cliente,
                 linkTo(methodOn(ClienteControllerV2.class).getCliente(cliente.getIdCliente())).withSelfRel(),
                 linkTo(methodOn(ClienteControllerV2.class).getAllClientes()).withRel("clientes"));

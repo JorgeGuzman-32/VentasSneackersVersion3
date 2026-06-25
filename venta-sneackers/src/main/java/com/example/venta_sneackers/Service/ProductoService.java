@@ -47,6 +47,7 @@ public class ProductoService {
                 .collect(Collectors.toList());
     }
 
+    @SuppressWarnings("null")
     public Optional<ProductoResponseDTO> obtenerPorId(Long id) {
         return repository.findById(id)
                 .map(this::toResponseDTO);
@@ -77,6 +78,7 @@ public class ProductoService {
     }
 
     public boolean actualizarStock(Long id, Integer nuevoStock) {
+        @SuppressWarnings("null")
         Optional<Producto> optionalProducto = repository.findById(id);
         if (optionalProducto.isPresent()) {
             Producto producto = optionalProducto.get();
@@ -88,6 +90,7 @@ public class ProductoService {
     }
 
     public boolean actualizarPrecio(Long id, BigDecimal nuevoPrecio) {
+        @SuppressWarnings("null")
         Optional<Producto> optionalProducto = repository.findById(id);
         if (optionalProducto.isPresent()) {
             Producto producto = optionalProducto.get();
@@ -121,11 +124,11 @@ public class ProductoService {
         return toResponseDTO(repository.save(producto));
     }
 
-    public boolean eliminarProducto(Long id) {
-        if (repository.existsById(id)) {
-            repository.deleteById(id);
-            return true;
-        }
-        return false;
+public boolean eliminarProducto(Long id) {
+    if (repository.existsById(id)) {
+        repository.deleteById(id);
+        return true;
     }
+    return false;
+}
 }

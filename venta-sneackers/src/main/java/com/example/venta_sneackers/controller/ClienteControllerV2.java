@@ -3,7 +3,6 @@ package com.example.venta_sneackers.controller;
 import com.example.venta_sneackers.assemblers.ClienteModelAssemblers;
 import com.example.venta_sneackers.model.Cliente;
 import com.example.venta_sneackers.Service.ClienteService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.MediaTypes;
@@ -13,27 +12,36 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 @RequestMapping("/api/v2/clientes")
 public class ClienteControllerV2 {
 
-    @Autowired
+    
     private ClienteService clienteService;
 
-    @Autowired
-    private ClienteModelAssemblers clienteModelAssemblers;
+    private final ClienteModelAssemblers clienteModelAssemblers;
 
-    @GetMapping(produces = MediaTypes.HAL_JSON_VALUE)
-    public ResponseEntity<CollectionModel<EntityModel<Cliente>>> getAllClientes() {
-        List<EntityModel<Cliente>> clientes = clienteService.getAllClientes().stream()
-                .map(clienteModelAssemblers::toModel)
-                .collect(Collectors.toList());
 
-        return ResponseEntity.ok(CollectionModel.of(clientes,
-                linkTo(methodOn(ClienteControllerV2.class).getAllClientes()).withSelfRel()));
+    ClienteControllerV2(ClienteModelAssemblers clienteModelAssemblers) {
+        this.clienteModelAssemblers = clienteModelAssemblers;
     }
+
+   
+
+    @SuppressWarnings("null")
+    @GetMapping(produces = MediaTypes.HAL_JSON_VALUE)
+public ResponseEntity<CollectionModel<EntityModel<Cliente>>> getAllClientes() {
+    
+    List<EntityModel<Cliente>> clientes = clienteService.getAllClientes().stream()
+            .map(clienteModelAssemblers::toModel) 
+            .collect(Collectors.toList());
+
+    return ResponseEntity.ok(CollectionModel.of(clientes,
+            linkTo(methodOn(ClienteControllerV2.class).getAllClientes()).withSelfRel()));
+}
 
     @GetMapping(value = "/{id}", produces = MediaTypes.HAL_JSON_VALUE)
     public ResponseEntity<EntityModel<Cliente>> getCliente(@PathVariable Long id) {
@@ -59,3 +67,4 @@ public class ClienteControllerV2 {
         return ResponseEntity.noContent().build();
     }
 }  
+

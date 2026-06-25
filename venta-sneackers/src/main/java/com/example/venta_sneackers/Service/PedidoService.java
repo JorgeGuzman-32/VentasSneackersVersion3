@@ -67,6 +67,7 @@ public class PedidoService {
     }
 
     // OBTENER PEDIDO POR ID
+    @SuppressWarnings("null")
     public Optional<PedidoResponseDTO> obtenerPorId(Long id) {
         return repository.findById(id)
                 .map(this::toResponseDTO);
@@ -75,6 +76,7 @@ public class PedidoService {
 
     // GUARDAR NUEVO PEDIDO
     public PedidoResponseDTO guardar(PedidoRequestDTO dto) {
+        @SuppressWarnings("null")
         Cliente cliente = clienteRepository.findById(dto.getClienteId()).orElseThrow();
 
         Pedido pedido = new Pedido();
@@ -92,7 +94,9 @@ public class PedidoService {
 
     // ACTUALIZAR PEDIDO EXISTENTE
     public PedidoResponseDTO actualizar(Long id, PedidoRequestDTO dto) {
+        @SuppressWarnings("null")
         Pedido pedido = repository.findById(id).orElseThrow();
+        @SuppressWarnings("null")
         Cliente cliente = clienteRepository.findById(dto.getClienteId()).orElseThrow();
 
         pedido.setPedFechaCompra(dto.getPedFechaCompra());
@@ -106,12 +110,14 @@ public class PedidoService {
         return toResponseDTO(updated);
     }
 
+    @SuppressWarnings("null")
     public void eliminar(Long id) {
         repository.deleteById(id);
     }
 
     // ACTUALIZAR ESTADO DE PAGO
     public PedidoResponseDTO actualizarEstadoPago(Long id, boolean pagado) {
+        @SuppressWarnings("null")
         Pedido pedido = repository.findById(id).orElseThrow();
         pedido.setPedPagado(pagado);
         Pedido updated = repository.save(pedido);
@@ -130,6 +136,7 @@ public class PedidoService {
     return repository.findAll();
     }
 
+    @SuppressWarnings("null")
     public Pedido getPedidoById(Long id) {
         return repository.findById(id).orElseThrow();
     }
