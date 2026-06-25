@@ -1,0 +1,13 @@
+spring:
+  datasource:
+    url: ${DB_TEST_URL:jdbc:mysql://localhost:3306/venta_sneackers_test}
+    username: ${DB_TEST_USER:root}
+    password: ${DB_TEST_PASSWORD:}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect

@@ -1,0 +1,36 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: gateway
+  cloud:
+    gateway:
+      forwarded:
+        enabled: false
+      routes:
+        - id: app-service
+          uri: lb://venta-sneackers
+          predicates:
+            - Path=/api/**
+          filters:
+            - StripPrefix=1
+        - id: app-doc
+          uri: lb://venta-sneackers
+          predicates:
+            - Path=/doc/**
+        - id: app-openapi
+          uri: lb://venta-sneackers
+          predicates:
+            - Path=/v3/api-docs/**
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE:http://localhost:8761/}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

@@ -1,0 +1,52 @@
+version: "3.9"
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: mysql-sneackers-v2
+    environment:
+      MYSQL_DATABASE: venta_sneackers_dev
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data_v2:/var/lib/mysql
+
+  eureka:
+    build:
+      context: ./eureka-server
+      dockerfile: DockerFile
+    container_name: eureka-v2
+    ports:
+      - "8761:8761"
+
+  app:
+    build:
+      context: .
+      dockerfile: DockerFile_v2
+    container_name: venta-sneackers-v2
+    depends_on:
+      - mysql
+      - eureka
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka:8761/eureka
+      DB_URL: jdbc:mysql://mysql:3306/venta_sneackers_dev
+      DB_USER: root
+      DB_PASSWORD: ""
+    ports:
+      - "8181:8181"
+
+  gateway:
+    build:
+      context: ./gateway
+      dockerfile: DockerFile
+    container_name: gateway-v2
+    depends_on:
+      - eureka
+      - app
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka:8761/eureka
+    ports:
+      - "8081:8081"
+
+volumes:
+  mysql_data_v2:

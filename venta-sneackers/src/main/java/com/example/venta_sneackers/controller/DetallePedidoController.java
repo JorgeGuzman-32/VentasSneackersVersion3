@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.venta_sneackers.Service.PedidoService;
-import com.example.venta_sneackers.dto.ClienteResponseDTO;
+
 import com.example.venta_sneackers.dto.PedidoDetalleResponseDTO;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -30,8 +30,9 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/V1/detalle-pedidos")
 @RequiredArgsConstructor
+
 @Tag(name = "Detalle Pedido", description = "Operaciones relacionadas con los Detalles de Pedido")
-@SuppressWarnings("null")
+
 public class DetallePedidoController {
 
     private final PedidoService pedidoService;
@@ -49,7 +50,7 @@ public class DetallePedidoController {
                     content = @Content(mediaType = "application/hal+json",
                             schema = @Schema(implementation = PedidoDetalleResponseDTO.class),
                     examples = @ExampleObject(value = """
-                            [
+
                                 {
                                     "detallePedidoId": 1,
                                     "pedidoId": 101,
@@ -59,18 +60,7 @@ public class DetallePedidoController {
                                     "productoId": 501,
                                     "productoNombre": "Sneaker Modelo A",
                                     "cantidad": 2
-                                },
-                                {
-                                    "detallePedidoId": 2,
-                                    "pedidoId": 102,
-                                    "pedidoNombre": "PED-102",
-                                    "clienteId": 1002,
-                                    "clienteNombre": "María López",
-                                    "productoId": 502,
-                                    "productoNombre": "Sneaker Modelo B",
-                                    "cantidad": 1
                                 }
-                            ]
                             """))),
         @ApiResponse(responseCode = "404", description = "No se encontraron detalles de pedido en el sistema",
                     content = @Content(mediaType = "application/json",
@@ -109,7 +99,6 @@ public class DetallePedidoController {
                 content = @Content(mediaType = "application/hal+json",
                     schema = @Schema(implementation = PedidoDetalleResponseDTO.class),
                     examples = @ExampleObject(value = """
-                        [
                             {
                                 "detallePedidoId": 1,
                                 "pedidoId": 101,
@@ -119,18 +108,7 @@ public class DetallePedidoController {
                                 "productoId": 501,
                                 "productoNombre": "Sneaker Modelo A",
                                 "cantidad": 2
-                            },
-                            {
-                                "detallePedidoId": 2,
-                                "pedidoId": 101,
-                                "pedidoNombre": "PED-101",
-                                "clienteId": 1001,
-                                "clienteNombre": "Juan Pérez",
-                                "productoId": 502,
-                                "productoNombre": "Sneaker Modelo B",
-                                "cantidad": 1
                             }
-                        ]
                     """))),
 
             @ApiResponse(responseCode = "404", description = "No se encontraron detalles de pedido para el ID de pedido proporcionado",
@@ -209,10 +187,5 @@ public class DetallePedidoController {
             return ResponseEntity.status(404).body(error);
         }
     }
-
-
-
-
-
-
+    
 }

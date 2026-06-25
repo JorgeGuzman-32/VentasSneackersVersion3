@@ -1,11 +1,11 @@
-package com.example.eurekaserver;
+package biblioteca.salas.duoc.eureka;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.netflix.eureka.server.EnableEurekaServer;
 
 @SpringBootApplication
-@EnableEurekaServer // <-- Esta anotación es la magia que activa el servidor
+@EnableEurekaServer
 public class EurekaServerApplication {
     public static void main(String[] args) {
         SpringApplication.run(EurekaServerApplication.class, args);

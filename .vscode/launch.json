@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-VentaSneackersApplication<venta-sneackers>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.example.venta_sneackers.VentaSneackersApplication",
+            "projectName": "venta-sneackers",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}
