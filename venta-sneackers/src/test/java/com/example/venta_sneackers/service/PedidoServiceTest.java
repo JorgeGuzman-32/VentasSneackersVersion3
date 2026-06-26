@@ -35,7 +35,7 @@ import com.example.venta_sneackers.repository.PedidoRepository;
 import com.example.venta_sneackers.repository.ProductoRepository;
 
 @ExtendWith(MockitoExtension.class)
-class PedidoServiceTest {
+public class PedidoServiceTest {
 
     @InjectMocks
     private PedidoService pedidoService;

@@ -23,7 +23,7 @@ import com.example.venta_sneackers.model.Cliente;
 import com.example.venta_sneackers.repository.ClienteRepository;
 
 @ExtendWith(MockitoExtension.class)
-class ClienteServiceTest {
+public class ClienteServiceTest {
 
     @InjectMocks
     private ClienteService clienteService;

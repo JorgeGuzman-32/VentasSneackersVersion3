@@ -24,7 +24,7 @@ import com.example.venta_sneackers.model.Talla;
 import com.example.venta_sneackers.repository.TallaRepository;
 
 @ExtendWith(MockitoExtension.class)
-class TallaServiceTest {
+public class TallaServiceTest {
 
     @InjectMocks
     private TallaService tallaService;

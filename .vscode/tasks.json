@@ -1,0 +1,67 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "verify-venta-sneackers",
+			"type": "shell",
+			"command": "venta-sneackers\\mvnw.cmd",
+			"args": [
+				"-f",
+				"venta-sneackers\\pom.xml",
+				"verify"
+			],
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "verify-venta-sneackers-test-profile",
+			"type": "shell",
+			"command": "venta-sneackers\\mvnw.cmd",
+			"args": [
+				"-f",
+				"venta-sneackers\\pom.xml",
+				"verify"
+			],
+			"isBackground": false,
+			"group": "test"
+		},
+		{
+			"label": "verify-after-v2-cleanup",
+			"type": "shell",
+			"command": "venta-sneackers\\mvnw.cmd",
+			"args": [
+				"-f",
+				"venta-sneackers\\pom.xml",
+				"verify"
+			],
+			"isBackground": false,
+			"group": "test"
+		},
+		{
+			"label": "run-cliente-service-test",
+			"type": "shell",
+			"command": "venta-sneackers\\mvnw.cmd",
+			"args": [
+				"-f",
+				"venta-sneackers\\pom.xml",
+				"-Dtest=ClienteServiceTest",
+				"test"
+			],
+			"isBackground": false,
+			"group": "test"
+		},
+		{
+			"label": "run-all-service-tests",
+			"type": "shell",
+			"command": "venta-sneackers\\mvnw.cmd",
+			"args": [
+				"-f",
+				"venta-sneackers\\pom.xml",
+				"-Dtest=*ServiceTest",
+				"test"
+			],
+			"isBackground": false,
+			"group": "test"
+		}
+	]
+}

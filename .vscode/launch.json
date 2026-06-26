@@ -1,13 +1,14 @@
 {
     "configurations": [
+        
         {
             "type": "java",
-            "name": "Spring Boot-VentaSneackersApplication<venta-sneackers>",
+            "name": "Spring Boot-VentaSneackersApplication<venta-sneackers> (local sin eureka)",
             "request": "launch",
             "cwd": "${workspaceFolder}",
             "mainClass": "com.example.venta_sneackers.VentaSneackersApplication",
             "projectName": "venta-sneackers",
-            "args": "",
+            "args": "--eureka.client.enabled=false --spring.cloud.discovery.enabled=false --eureka.client.register-with-eureka=false --eureka.client.fetch-registry=false --server.port=8182",
             "envFile": "${workspaceFolder}/.env"
         }
     ]

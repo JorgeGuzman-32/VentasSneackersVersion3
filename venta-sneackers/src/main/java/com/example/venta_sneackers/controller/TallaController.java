@@ -20,6 +20,7 @@ import com.example.venta_sneackers.dto.TallaRequestDTO;
 import com.example.venta_sneackers.dto.TallaResponseDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -47,11 +48,17 @@ public class TallaController {
     @GetMapping(produces = MediaTypes.HAL_JSON_VALUE)
     @Operation(summary = "Obtener todas las tallas", description = "Devuelve una lista de todas las tallas disponibles")
     @ApiResponses(value = {
-                @ApiResponse(responseCode = "200", description = "Tallas obtenidas exitosamente",
-                    content = @Content(mediaType = "application/hal+json")),
+            @ApiResponse(responseCode = "200", description = "Lista de tallas obtenida exitosamente",
+                    content = @Content(mediaType = "application/hal+json",
+                        schema = @Schema(implementation = TallaResponseDTO.class),
+                        examples = @ExampleObject(
+                            value = "[{\"id\":1,\"tallNombre\":\"42\",\"unidad\":\"EU\"}]"
+                        )
+                    )),
             @ApiResponse(responseCode = "404", description = "No se encontraron tallas",
                     content = @Content(mediaType = "application/json"))
     })
+        
     public ResponseEntity<CollectionModel<EntityModel<TallaResponseDTO>>> obtenerTodas() {
         List<TallaResponseDTO> tallas = tallaService.obtenerTodas();
         if (tallas.isEmpty()) {
@@ -73,10 +80,20 @@ public class TallaController {
     @GetMapping(value = "/{id}", produces = MediaTypes.HAL_JSON_VALUE)
     @Operation(summary = "Obtener una talla por ID", description = "Busca y devuelve una talla específica por su identificador")
     @ApiResponses(value = {
-                @ApiResponse(responseCode = "200", description = "Talla encontrada",
-                    content = @Content(mediaType = "application/hal+json")),
+            @ApiResponse(responseCode = "200", description = "Talla encontrada exitosamente",
+                    content = @Content(mediaType = "application/hal+json",
+                        schema = @Schema(implementation = TallaResponseDTO.class),
+                        examples = @ExampleObject(
+                            value = "{\"id\":1,\"tallNombre\":\"42\",\"unidad\":\"EU\"}"
+                        )
+                    )),
             @ApiResponse(responseCode = "404", description = "Talla no encontrada",
-                    content = @Content(mediaType = "application/json"))
+                    content = @Content(mediaType = "application/json",
+                        schema = @Schema(implementation = Map.class),
+                        examples = @ExampleObject(
+                            value = "{\"error\":\"Talla no encontrada\"}"
+                        )
+                    ))
     })
     public ResponseEntity<?> obtenerPorId(@PathVariable Long id) {
         Optional<TallaResponseDTO> talla = tallaService.obtenerPorId(id);
@@ -152,7 +169,14 @@ public class TallaController {
     @DeleteMapping("/{id}")
     @Operation(summary = "Eliminar una talla", description = "Elimina una talla específica de la base de datos")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "204", description = "Talla eliminada exitosamente"),
+            @ApiResponse(responseCode = "204", description = "Talla eliminada exitosamente",
+                content = @Content(mediaType = "application/json",
+                    schema = @Schema(implementation = Void.class),
+                    examples = @ExampleObject(
+                        value = "Talla eliminada exitosamente"
+                    )
+                )
+            ),
             @ApiResponse(responseCode = "404", description = "Talla no encontrada",
                     content = @Content(mediaType = "application/json"))
     })
